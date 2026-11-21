@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة التحكم | بذور قلب الثور</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f6f4;--card:#fff;--line:#e7e7e3;--ink:#1f2421;--muted:#6b716d;--purple:#6d5bd0;--green:#0f6b2f;--red:#d91f26;--amber:#c98a00}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Cairo",Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  button,input,select{font:inherit}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  header h1{font-size:20px;font-weight:800}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
+  .card>.hd{padding:10px 16px;border-bottom:1px solid var(--line);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .card>.bd{padding:16px}
+  .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .kpi .l{color:var(--muted);font-size:13px;font-weight:600}
+  .kpi .v{font-size:26px;font-weight:800;direction:ltr;text-align:right}
+  .kpi .d{font-size:12px;font-weight:700}
+  .up{color:#16a34a}.down{color:var(--red)}
+  .seg{display:inline-flex;background:#f1f1ee;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+  .seg button{border:0;background:transparent;padding:4px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13px}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .chart{position:relative;height:230px}
+  .chart svg{width:100%;height:100%;overflow:visible}
+  .tip{position:absolute;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);pointer-events:none;white-space:nowrap;display:none}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}
+  .legend i{display:inline-block;width:18px;height:0;border-top:2px solid var(--purple);vertical-align:middle;margin-left:4px}
+  .legend i.prev{border-top:2px dashed #9a9a9a}
+  .tabs{display:flex;gap:4px;overflow-x:auto;margin-bottom:12px}
+  .tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap;font-weight:700}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tab{display:none}.tab.on{display:block}
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th{text-align:right;color:var(--muted);font-weight:700;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;background:#fafaf8}
+  .tbl td{padding:8px;border-bottom:1px solid #f0f0ec;vertical-align:top}
+  .scroll{overflow-x:auto}
+  .tbl select{border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:#fff}
+  .pill{display:inline-block;border-radius:999px;padding:0 8px;font-size:12px;font-weight:700}
+  a.tel{color:var(--green);font-weight:800;text-decoration:none;direction:ltr;display:inline-block}
+  .muted{color:var(--muted)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input.in,select.in{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;min-width:0}
+  .btn{border:0;background:var(--ink);color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:700}
+  .btn.light{background:#f1f1ee;color:var(--ink)}
+  .grid2{display:grid;grid-template-columns:1fr;gap:12px}
+  label.f{display:block;font-weight:700;margin-bottom:4px}
+  label.f small{color:var(--muted);font-weight:400}
+  .num{direction:ltr;text-align:right;white-space:nowrap}
+  .pos{color:#16a34a;font-weight:800}.neg{color:var(--red);font-weight:800}
+  #login{max-width:340px;margin:12vh auto;text-align:center}
+  #login .card{padding:24px}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:10px;display:none;z-index:9}
+  .st-new{background:#eef2ff;color:#4338ca}.st-confirmed{background:#dcfce7;color:#166534}.st-no_answer{background:#fef3c7;color:#92400e}
+  .st-cancelled{background:#fee2e2;color:#991b1b}.st-shipped{background:#e0f2fe;color:#075985}.st-delivered{background:#d1fae5;color:#065f46}.st-returned{background:#f3e8ff;color:#6b21a8}
+  @media(min-width:760px){.kpis{grid-template-columns:repeat(4,1fr)}.grid2{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <div class="card">
+    <h2 style="margin-bottom:12px">🍅 لوحة التحكم</h2>
+    <form id="loginForm"><input class="in" type="password" id="pw" placeholder="كلمة السر" style="width:100%;margin-bottom:10px" autofocus>
+    <button class="btn" style="width:100%">دخول</button></form>
+    <p id="loginErr" class="neg" style="margin-top:8px"></p>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <h1>🍅 لوحة التحكم</h1>
+    <div class="row"><button class="btn light" onclick="loadAll()">تحديث</button><button class="btn light" onclick="logout()">خروج</button></div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card">
+    <div class="hd"><span>هذا الأسبوع مقارنة بالأسبوع الماضي</span>
+      <div class="seg" id="metricSeg"><button data-m="rate" class="on">نسبة التأكيد</button><button data-m="orders">الطلبات</button><button data-m="confirmed">المؤكدة</button><button data-m="leads">Leads</button></div>
+    </div>
+    <div class="bd">
+      <div class="chart" id="chart"><div class="tip" id="tip"></div></div>
+      <div class="legend"><span><i></i>هذا الأسبوع</span><span><i class="prev"></i>الأسبوع الماضي</span></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-t="orders" class="on">الطلبات</button>
+    <button data-t="leads">Leads للاتصال</button>
+    <button data-t="weeks">الأرباح الأسبوعية</button>
+    <button data-t="prices">جدول الأسعار</button>
+    <button data-t="telegram">تيليغرام</button>
+  </div>
+
+  <!-- ORDERS -->
+  <div class="tab on" id="t-orders">
+    <div class="card">
+      <div class="hd">
+        <div class="seg" id="statusSeg"></div>
+        <div class="row"><input class="in" id="q" placeholder="بحث: هاتف، اسم، بلدية" style="width:180px"><button class="btn light" onclick="exportCsv()">تصدير CSV</button></div>
+      </div>
+      <div class="scroll"><table class="tbl" id="ordersTbl"></table></div>
+      <div class="bd row" style="justify-content:center"><button class="btn light" id="prevPage">السابق</button><span id="pageNo" class="muted"></span><button class="btn light" id="nextPage">التالي</button></div>
+    </div>
+  </div>
+
+  <!-- LEADS -->
+  <div class="tab" id="t-leads">
+    <div class="card">
+      <div class="hd"><span>زوار كتبوا رقمهم ولم يكملوا الطلب</span>
+        <div class="seg" id="leadSeg"><button data-s="open" class="on">للاتصال</button><button data-s="called">تم الاتصال</button><button data-s="no_answer">لا يرد</button><button data-s="not_interested">غير مهتم</button><button data-s="ordered">طلبوا</button></div>
+      </div>
+      <div class="scroll"><table class="tbl" id="leadsTbl"></table></div>
+    </div>
+  </div>
+
+  <!-- WEEKS -->
+  <div class="tab" id="t-weeks">
+    <div class="card">
+      <div class="hd"><span>مصاريف الإعلانات لهذا الأسبوع</span></div>
+      <div class="bd">
+        <form id="weekForm" class="row">
+          <select class="in" id="wkSel"></select>
+          <input class="in" id="wkUsd" type="number" step="0.01" min="0" placeholder="الإنفاق $" style="width:110px">
+          <input class="in" id="wkRate" type="number" step="0.01" min="0" placeholder="سعر الدولار (دج)" style="width:140px">
+          <input class="in" id="wkOther" type="number" step="1" min="0" placeholder="مصاريف أخرى (دج)" style="width:150px">
+          <input class="in" id="wkNote" placeholder="ملاحظة" style="width:140px">
+          <button class="btn">حفظ</button>
+        </form>
+      </div>
+    </div>
+    <div class="card"><div class="hd"><span>الربح والتكلفة كل أسبوع (يبدأ الأسبوع يوم السبت)</span></div>
+      <div class="scroll"><table class="tbl" id="weeksTbl"></table></div>
+      <div class="bd muted" style="font-size:12px">الربح = مبيعات الطلبات المسلّمة − تكلفة المنتج − تكلفة التوصيل − تكلفة المرتجعات − الإعلانات ($ × سعر الدولار) − مصاريف أخرى. "الربح المتوقع" يفترض أن كل الطلبات المؤكدة ستُسلّم.</div>
+    </div>
+  </div>
+
+  <!-- PRICES -->
+  <div class="tab" id="t-prices">
+    <div class="card"><div class="hd"><span>جدول الأسعار</span></div>
+      <div class="bd">
+        <form id="priceForm" class="grid2">
+          <div><label class="f">سعر البيع (دج) <small>يظهر في صفحة الهبوط</small></label><input class="in" style="width:100%" type="number" name="sell_price" min="0"></div>
+          <div><label class="f">تكلفة المنتج للقطعة (دج) <small>بذور + هدية + تغليف</small></label><input class="in" style="width:100%" type="number" name="product_cost" min="0"></div>
+          <div><label class="f">تكلفة التوصيل عليك لكل طرد (دج) <small>0 إذا كان الزبون يدفع التوصيل</small></label><input class="in" style="width:100%" type="number" name="delivery_cost" min="0"></div>
+          <div><label class="f">خسارة كل طرد مرتجع (دج)</label><input class="in" style="width:100%" type="number" name="return_cost" min="0"></div>
+          <div><label class="f">سعر الدولار الافتراضي (دج لكل 1$) <small>يُستعمل إذا لم تحدد سعر الأسبوع</small></label><input class="in" style="width:100%" type="number" step="0.01" name="usd_rate" min="0"></div>
+          <div style="align-self:end"><button class="btn" style="width:100%">حفظ الأسعار</button></div>
+        </form>
+        <div id="unitCalc" class="muted" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELEGRAM -->
+  <div class="tab" id="t-telegram">
+    <div class="card"><div class="hd"><span>إشعارات تيليغرام</span></div>
+      <div class="bd">
+        <p class="muted" style="margin-bottom:10px">1) أرسل /start للبوت من حسابك (أو أضفه لمجموعة). 2) اضغط "إيجاد Chat ID". 3) ضع الرقم في TELEGRAM_CHAT_ID على Vercel. 4) اضغط "إرسال اختبار".</p>
+        <div class="row"><button class="btn light" onclick="tgChats()">إيجاد Chat ID</button><button class="btn" onclick="tgTest()">إرسال اختبار</button></div>
+        <pre id="tgOut" style="margin-top:12px;white-space:pre-wrap;direction:ltr;text-align:left;background:#fafaf8;border-radius:10px;padding:10px;display:none"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const ST={new:'جديد',confirmed:'مؤكد',no_answer:'لا يرد',cancelled:'ملغى',shipped:'تم الشحن',delivered:'تم التسليم',returned:'مرتجع'};
+const LST={lead:'للاتصال',called:'تم الاتصال',no_answer:'لا يرد',not_interested:'غير مهتم',ordered:'طلب'};
+const DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+let KEY=localStorage.getItem('adminKey')||'', S=null, metric='rate', ordStatus='', ordPage=0, leadStatus='open';
+const $=s=>document.querySelector(s);
+const fmt=n=>Math.round(n||0).toLocaleString('fr-DZ').replace(/ | /g,' ');
+const pct=x=>x==null?'—':Math.round(x*100)+'%';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2200)}
+
+async function api(action,opts={}){
+  const url='/api/admin?action='+action+(opts.qs?'&'+opts.qs:'');
+  const r=await fetch(url,{method:opts.body?'POST':'GET',headers:{'x-admin-key':KEY,'content-type':'application/json'},body:opts.body?JSON.stringify(opts.body):undefined});
+  if(r.status===401){logout();throw new Error('unauthorized')}
+  const d=await r.json(); if(!d.ok&&d.error&&action!=='telegram_chats'&&action!=='telegram_test') toast('خطأ: '+d.error); return d;
+}
+function logout(){localStorage.removeItem('adminKey');KEY='';$('#app').hidden=true;$('#login').hidden=false}
+$('#loginForm').onsubmit=async e=>{e.preventDefault();KEY=$('#pw').value;const r=await fetch('/api/admin?action=summary',{headers:{'x-admin-key':KEY}});
+  if(r.ok){localStorage.setItem('adminKey',KEY);start()}else $('#loginErr').textContent='كلمة السر غير صحيحة'};
+function start(){$('#login').hidden=true;$('#app').hidden=false;loadAll()}
+
+async function loadAll(){await Promise.all([loadSummary(),loadOrders(),loadLeads()])}
+
+// ---------- Summary / KPIs / chart / weeks ----------
+async function loadSummary(){
+  const d=await api('summary'); if(!d.ok) return; S=d;
+  const [w,p]=d.weeks;
+  const delta=(a,b,isRate)=>{if(!b&&!isRate)return '';const diff=isRate?(a-b)*100:(b?((a-b)/Math.abs(b))*100:0);if(!isFinite(diff)||(!a&&!b))return '';
+    return `<span class="${diff>=0?'up':'down'}">${diff>=0?'↑':'↓'} ${Math.abs(diff).toFixed(1)}${isRate?' نقطة':'%'}</span> <span class="muted">مقارنة بالأسبوع الماضي</span>`};
+  $('#kpis').innerHTML=[
+    ['طلبات هذا الأسبوع',fmt(w.orders),delta(w.orders,p.orders)],
+    ['نسبة التأكيد',pct(w.confirmation_rate),delta(w.confirmation_rate,p.confirmation_rate,true)],
+    ['Leads هذا الأسبوع',fmt(w.leads),delta(w.leads,p.leads)],
+    ['ربح الأسبوع (دج)',fmt(w.profit),`<span class="muted">المتوقع: ${fmt(w.expected_profit)} دج</span>`],
+  ].map(([l,v,dl])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${dl}</div></div>`).join('');
+  drawChart(); renderWeeks(); fillPrices();
+}
+
+function drawChart(){
+  const box=$('#chart'), tip=$('#tip'); box.querySelectorAll('svg').forEach(s=>s.remove());
+  const cur=S.chart.this_week, prev=S.chart.last_week, today=S.today;
+  const val=d=>metric==='rate'?(d.rate==null?null:d.rate*100):d[metric];
+  const curVals=cur.map(d=>d.day>today?null:val(d)), prevVals=prev.map(val);
+  const all=[...curVals,...prevVals].filter(v=>v!=null);
+  const max=metric==='rate'?100:Math.ceil(Math.max(4,...all)*1.15/4)*4;
+  const W=box.clientWidth||600,H=box.clientHeight,pl=34,pr=10,pt=10,pb=26;
+  const x=i=>W-pr-(i*(W-pl-pr)/6), y=v=>pt+(H-pt-pb)*(1-v/max); // RTL: Saturday on the right
+  const path=vals=>{let s='',pen=false;vals.forEach((v,i)=>{if(v==null){pen=false;return}s+=(pen?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1);pen=true});return s};
+  let g='';
+  for(let k=0;k<=4;k++){const v=max*k/4,yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="#eee"/><text x="${pl-6}" y="${yy+4}" font-size="10" fill="#999" text-anchor="end">${Math.round(v)}${metric==='rate'?'%':''}</text>`}
+  cur.forEach((d,i)=>{const dt=new Date(d.day+'T00:00:00Z');g+=`<text x="${x(i)}" y="${H-6}" font-size="11" fill="#888" text-anchor="middle">${DAYS[dt.getUTCDay()]} ${dt.getUTCDate()}</text>`});
+  const dots=(vals,c,dash)=>vals.map((v,i)=>v==null?'':`<circle cx="${x(i)}" cy="${y(v)}" r="3.5" fill="#fff" stroke="${c}" stroke-width="2"${dash?' opacity=".7"':''}/>`).join('');
+  const svg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}
+    <path d="${path(prevVals)}" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-dasharray="4 4"/>${dots(prevVals,'#9a9a9a',1)}
+    <path d="${path(curVals)}" fill="none" stroke="var(--purple)" stroke-width="2.5" stroke-linejoin="round"/>${dots(curVals,'#6d5bd0')}
+    <line id="hov" y1="${pt}" y2="${H-pb}" stroke="#ccc" stroke-dasharray="3 3" style="display:none"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" id="hit"/></svg>`;
+  box.insertAdjacentHTML('afterbegin',svg);
+  const hit=box.querySelector('#hit'),hov=box.querySelector('#hov');
+  const show=e=>{const r=box.getBoundingClientRect();const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    const i=Math.max(0,Math.min(6,Math.round((W-pr-px)/((W-pl-pr)/6))));
+    hov.setAttribute('x1',x(i));hov.setAttribute('x2',x(i));hov.style.display='';
+    const f=(d,v)=>v==null?'—':(metric==='rate'?Math.round(v)+'% ('+d.confirmed+'/'+d.orders+')':v);
+    tip.innerHTML=`<div><b style="color:var(--purple)">● ${f(cur[i],curVals[i])}</b> <span class="muted">${cur[i].day}</span></div><div><b style="color:#888">○ ${f(prev[i],prevVals[i])}</b> <span class="muted">${prev[i].day}</span></div>`;
+    tip.style.display='block';let left=x(i)+10;if(left+160>W)left=x(i)-170;tip.style.left=left+'px';tip.style.top='8px'};
+  hit.addEventListener('mousemove',show);hit.addEventListener('touchstart',show,{passive:true});
+  hit.addEventListener('mouseleave',()=>{tip.style.display='none';hov.style.display='none'});
+}
+$('#metricSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;metric=b.dataset.m;[...$('#metricSeg').children].forEach(x=>x.classList.toggle('on',x===b));drawChart()};
+window.addEventListener('resize',()=>S&&drawChart());
+
+function renderWeeks(){
+  const rows=S.weeks;
+  $('#weeksTbl').innerHTML=`<tr><th>الأسبوع</th><th>Leads</th><th>طلبات</th><th>تأكيد</th><th>مسلّمة</th><th>مرتجعة</th><th>المبيعات</th><th>تكلفة المنتج</th><th>التوصيل+المرتجع</th><th>الإعلانات</th><th>أخرى</th><th>التكلفة الكلية</th><th>الربح</th><th>الربح المتوقع</th><th>تكلفة الطلب</th></tr>`+
+  rows.map(w=>`<tr><td class="num">${w.week_start.slice(5)} → ${w.week_end.slice(5)}</td><td>${w.leads}</td><td>${w.orders}</td><td>${pct(w.confirmation_rate)}</td><td>${w.delivered}</td><td>${w.returned}</td>
+    <td class="num">${fmt(w.revenue)}</td><td class="num">${fmt(w.cogs)}</td><td class="num">${fmt(w.delivery_costs+w.return_costs)}</td>
+    <td class="num">${fmt(w.ad_spend_da)}<div class="muted">${w.ad_spend_usd}$ × ${w.usd_rate}</div></td><td class="num">${fmt(w.other_costs)}</td><td class="num">${fmt(w.total_cost)}</td>
+    <td class="num ${w.profit>=0?'pos':'neg'}">${fmt(w.profit)}</td><td class="num ${w.expected_profit>=0?'pos':'neg'}">${fmt(w.expected_profit)}</td><td class="num">${fmt(w.cost_per_order)}</td></tr>`).join('');
+  const sel=$('#wkSel'),keep=sel.value;
+  sel.innerHTML=rows.map(w=>`<option value="${w.week_start}">${w.week_start} → ${w.week_end}</option>`).join('');
+  if(keep) sel.value=keep; fillWeek();
+}
+function fillWeek(){const w=S.weeks.find(x=>x.week_start===$('#wkSel').value)||S.weeks[0];
+  $('#wkUsd').value=w.ad_spend_usd||'';$('#wkRate').value=w.usd_rate||'';$('#wkOther').value=w.other_costs||'';$('#wkNote').value=w.note||''}
+$('#wkSel').onchange=fillWeek;
+$('#weekForm').onsubmit=async e=>{e.preventDefault();const d=await api('save_week',{body:{week_start:$('#wkSel').value,ad_spend_usd:$('#wkUsd').value,usd_rate:$('#wkRate').value,other_costs:$('#wkOther').value,note:$('#wkNote').value}});if(d.ok){toast('تم الحفظ');loadSummary()}};
+
+function fillPrices(){const f=$('#priceForm');Object.entries(S.settings).forEach(([k,v])=>{if(f[k])f[k].value=v});calcUnit()}
+function calcUnit(){const f=$('#priceForm');const m=(+f.sell_price.value||0)-(+f.product_cost.value||0)-(+f.delivery_cost.value||0);
+  $('#unitCalc').innerHTML=`هامش القطعة الواحدة قبل الإعلانات: <b class="${m>=0?'pos':'neg'}">${fmt(m)} دج</b>`}
+$('#priceForm').oninput=calcUnit;
+$('#priceForm').onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.target));const d=await api('save_settings',{body});if(d.ok){toast('تم حفظ الأسعار');loadSummary()}};
+
+// ---------- Orders ----------
+async function loadOrders(){
+  const qs=new URLSearchParams({status:ordStatus,q:$('#q').value,page:ordPage}).toString();
+  const d=await api('orders',{qs}); if(!d.ok) return;
+  const total=Object.values(d.counts).reduce((a,b)=>a+b,0);
+  $('#statusSeg').innerHTML=`<button data-s="" class="${ordStatus===''?'on':''}">الكل ${total}</button>`+Object.keys(ST).map(s=>`<button data-s="${s}" class="${ordStatus===s?'on':''}">${ST[s]} ${d.counts[s]||0}</button>`).join('');
+  $('#ordersTbl').innerHTML=`<tr><th>#</th><th>التاريخ</th><th>الاسم</th><th>الهاتف</th><th>الولاية / البلدية</th><th>المرجع</th><th>الكمية</th><th>المجموع</th><th>الحالة</th><th>ملاحظة</th></tr>`+
+   (d.orders.length?d.orders.map(o=>`<tr><td>${o.id}</td><td class="muted num">${new Date(o.created_at).toLocaleString('fr-DZ',{timeZone:'Africa/Algiers',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+     <td>${esc(o.name)}</td><td><a class="tel" href="tel:${esc(o.phone)}">${esc(o.phone)}</a></td><td>${esc(o.wilaya_code)} - ${esc(o.wilaya)}<div class="muted">${esc(o.commune)}</div></td>
+     <td class="muted">${esc(o.reference)}</td><td>${o.qty}</td><td class="num">${fmt(o.total)}</td>
+     <td><select data-id="${o.id}" class="stSel st-${o.status}">${Object.keys(ST).map(s=>`<option value="${s}"${s===o.status?' selected':''}>${ST[s]}</option>`).join('')}</select></td>
+     <td><input class="in noteIn" data-id="${o.id}" value="${esc(o.note)}" style="width:130px;padding:3px 6px"></td></tr>`).join(''):`<tr><td colspan="10" class="muted" style="text-align:center;padding:24px">لا توجد طلبات</td></tr>`);
+  $('#pageNo').textContent='صفحة '+(ordPage+1); $('#prevPage').disabled=ordPage===0; $('#nextPage').disabled=d.orders.length<50;
+}
+$('#statusSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;ordStatus=b.dataset.s;ordPage=0;loadOrders()};
+let qT;$('#q').oninput=()=>{clearTimeout(qT);qT=setTimeout(()=>{ordPage=0;loadOrders()},350)};
+$('#prevPage').onclick=()=>{ordPage=Math.max(0,ordPage-1);loadOrders()};$('#nextPage').onclick=()=>{ordPage++;loadOrders()};
+$('#ordersTbl').addEventListener('change',async e=>{
+  const id=e.target.dataset.id; if(!id) return;
+  const body=e.target.classList.contains('stSel')?{id,status:e.target.value}:{id,note:e.target.value};
+  const d=await api('update_order',{body}); if(d.ok){toast('تم التحديث'); if(body.status){e.target.className='stSel st-'+body.status;loadSummary()}}
+});
+function exportCsv(){fetch('/api/admin?action=export&status='+ordStatus,{headers:{'x-admin-key':KEY}}).then(r=>r.blob()).then(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='orders.csv';a.click()})}
+
+// ---------- Leads ----------
+async function loadLeads(){
+  const d=await api('leads',{qs:'status='+leadStatus}); if(!d.ok) return;
+  $('#leadsTbl').innerHTML=`<tr><th>#</th><th>آخر نشاط</th><th>الهاتف</th><th>الاسم</th><th>الولاية / البلدية</th><th>الحالة</th></tr>`+
+   (d.leads.length?d.leads.map(l=>`<tr><td>${l.id}</td><td class="muted num">${new Date(l.updated_at).toLocaleString('fr-DZ',{timeZone:'Africa/Algiers',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td>
+     <td>${l.phone.length===10?`<a class="tel" href="tel:${esc(l.phone)}">${esc(l.phone)}</a>`:`<span class="num">${esc(l.phone)}</span> <span class="pill st-no_answer">ناقص ${10-l.phone.length}</span>`}</td>
+     <td>${esc(l.name)||'<span class="muted">—</span>'}</td><td>${esc(l.wilaya)||''}<div class="muted">${esc(l.commune)||''}</div></td>
+     <td>${l.status==='ordered'?`<span class="pill st-confirmed">طلب #${l.order_id}</span>`:`<select data-id="${l.id}">${['lead','called','no_answer','not_interested'].map(s=>`<option value="${s}"${s===l.status?' selected':''}>${LST[s]}</option>`).join('')}</select>`}</td></tr>`).join('')
+   :`<tr><td colspan="6" class="muted" style="text-align:center;padding:24px">لا يوجد</td></tr>`);
+}
+$('#leadSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;leadStatus=b.dataset.s;[...$('#leadSeg').children].forEach(x=>x.classList.toggle('on',x===b));loadLeads()};
+$('#leadsTbl').addEventListener('change',async e=>{const id=e.target.dataset.id;if(!id)return;const d=await api('update_lead',{body:{id,status:e.target.value}});if(d.ok)toast('تم التحديث')});
+
+// ---------- Telegram ----------
+async function tgChats(){const d=await api('telegram_chats');const o=$('#tgOut');o.style.display='block';
+  o.textContent=d.ok?(d.chats.length?d.chats.map(c=>`Chat ID: ${c.id}   (${c.type}) ${c.title||''}`).join('\n'):'لا توجد رسائل. أرسل /start للبوت ثم أعد المحاولة.'):'خطأ: '+d.error}
+async function tgTest(){const d=await api('telegram_test');const o=$('#tgOut');o.style.display='block';o.textContent=d.ok?'✅ تم الإرسال إلى '+d.sent+' محادثة':'❌ '+(d.errors||[]).join('\n')}
+
+// Tabs
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('#tabs').children].forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+b.dataset.t))};
+
+KEY?start():logout();
+</script>
+</body>
+</html>

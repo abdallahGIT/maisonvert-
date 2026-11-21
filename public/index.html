@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بذور طماطم قلب الثور | ازرعها بنفسك</title>
+<meta name="description" content="بذور طماطم قلب الثور 2 غرام (200-300 بذرة) مع هدية بذور بطيخ الكناري. الدفع عند الاستلام والتوصيل لـ 58 ولاية.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#0f6b2f; --green-d:#0a5223; --lime:#b8ef3a; --yellow:#ffe04a;
+    --red:#d91f26; --red-d:#b5161c; --cream:#fdf8ec; --ink:#1d2a1f; --muted:#5b6b5e;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Cairo",Tahoma,Arial,sans-serif;color:var(--ink);background:#eeeeec;line-height:1.6;padding-bottom:76px}
+  img{display:block;max-width:100%;height:auto}
+  .page{max-width:560px;margin:0 auto;background:var(--cream);overflow:hidden;box-shadow:0 0 30px rgba(0,0,0,.08)}
+  section{padding:28px 18px}
+  h2{font-size:24px;font-weight:800;text-align:center;margin-bottom:18px}
+
+  /* grass strip */
+  .grass{height:26px;background:
+    linear-gradient(135deg,transparent 50%,var(--green) 50%) 0 100%/10px 18px repeat-x,
+    linear-gradient(225deg,transparent 50%,#3d9b2a 50%) 5px 100%/10px 14px repeat-x,
+    var(--yellow)}
+
+  .btn{display:block;width:100%;border:0;cursor:pointer;background:var(--red);color:#fff;font:inherit;font-weight:800;font-size:19px;
+    padding:13px 18px;border-radius:999px;text-align:center;text-decoration:none;box-shadow:0 6px 16px rgba(217,31,38,.35);transition:transform .15s,background .15s}
+  .btn:hover{background:var(--red-d)} .btn:active{transform:scale(.98)}
+  .pulse{animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,31,38,.5)}50%{box-shadow:0 0 0 10px rgba(217,31,38,0)}}
+
+  /* HERO */
+  .hero{display:grid;gap:18px}
+  .hero-img{border-radius:var(--radius);overflow:hidden;border:3px solid #fff;box-shadow:0 8px 24px rgba(15,107,47,.18)}
+  .hero h1{color:var(--green);font-size:30px;line-height:1.3;font-weight:800}
+  .seeds{color:var(--red);font-size:52px;font-weight:800;line-height:1.1;margin:6px 0 2px;direction:ltr;text-align:right}
+  .seeds-sub{font-weight:700;font-size:18px;margin-bottom:10px}
+  .bullets{list-style:none;margin-bottom:14px}
+  .bullets li{position:relative;padding-right:26px;margin:6px 0;font-size:16px}
+  .bullets li::before{content:"✔";position:absolute;right:0;top:0;color:var(--green);font-weight:800}
+  .gift{background:#fff6c7;border:2px dashed #e7b400;border-radius:12px;padding:8px 12px;font-weight:700;font-size:15px;margin-bottom:14px}
+  .price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .price .now{color:var(--green);font-size:30px;font-weight:800}
+  .price .old{color:var(--muted);text-decoration:line-through;font-size:18px}
+  .price .tag{background:var(--red);color:#fff;font-size:13px;font-weight:700;padding:2px 10px;border-radius:999px}
+
+  /* PRODUCT GALLERY */
+  .gal{min-width:0}
+  .gal-main{position:relative;border-radius:var(--radius);overflow:hidden;border:3px solid #fff;box-shadow:0 8px 24px rgba(15,107,47,.18);background:#fff}
+  .slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .slides::-webkit-scrollbar{display:none}
+  .slides img{flex:0 0 100%;width:100%;aspect-ratio:4/3;object-fit:cover;scroll-snap-align:center}
+  .nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--green);font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+  .nav{direction:ltr} .nav.prev{right:8px} .nav.next{left:8px}
+  @media (max-width:519px),(hover:none){.nav{display:none}}
+  .count{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;direction:ltr}
+  .thumbs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none;padding:2px}
+  .thumbs::-webkit-scrollbar{display:none}
+  .thumbs button{flex:0 0 62px;height:62px;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;background:#fff;opacity:.6;transition:.15s}
+  .thumbs button img{width:100%;height:100%;object-fit:cover}
+  .thumbs button.on{border-color:var(--red);opacity:1}
+
+  /* MOVING BANNER */
+  .marquee{background:#111;color:#fff;overflow:hidden;white-space:nowrap;padding:10px 0;font-weight:800;font-size:16px;border-top:3px solid var(--yellow);border-bottom:3px solid var(--yellow)}
+  .marquee .track{display:inline-flex;animation:mq 22s linear infinite}
+  .marquee span{padding:0 18px}
+  .marquee span::after{content:"•";color:var(--yellow);margin-right:36px}
+  @keyframes mq{from{transform:translateX(0)}to{transform:translateX(50%)}}
+  @media (prefers-reduced-motion:reduce){.marquee .track{animation:none}}
+
+  /* ORDER FORM */
+  .order{background:var(--yellow)}
+  .form-box{background:#fff;border:2px solid var(--green);border-radius:20px;padding:20px 16px;box-shadow:0 10px 24px rgba(0,0,0,.08)}
+  .form-box h2{color:var(--red);margin-bottom:4px}
+  .form-box .sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px}
+  label{display:block;font-weight:700;font-size:15px;margin:10px 0 4px}
+  input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:2px solid #cfe3d3;border-radius:12px;background:#fbfffb;outline:none;transition:border .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--green)}
+  .err{border-color:var(--red)!important}
+  .qty{display:flex;align-items:center;gap:10px}
+  .qty button{width:42px;height:42px;border-radius:50%;border:2px solid var(--green);background:#fff;font-size:22px;font-weight:800;color:var(--green);cursor:pointer}
+  .qty output{min-width:30px;text-align:center;font-weight:800;font-size:20px}
+  .summary{background:var(--cream);border-radius:12px;padding:10px 12px;margin:14px 0;font-size:15px}
+  .summary div{display:flex;justify-content:space-between}
+  .summary .total{font-weight:800;color:var(--green);font-size:17px;border-top:1px dashed #cdd;margin-top:6px;padding-top:6px}
+  .form-box .btn{margin-top:6px}
+  .trust{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+  .form-err{color:var(--red);font-weight:700;font-size:14px;text-align:center;min-height:0;margin:4px 0}
+  .form-err:empty{display:none}
+  .btn:disabled{opacity:.7;cursor:wait}
+  .thanks{display:none;text-align:center;padding:20px 6px}
+  .thanks .ok{font-size:54px}
+  .thanks h3{color:var(--green);font-size:22px;font-weight:800}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{background:#fff;border:2px solid #b9d7bf;border-radius:14px;text-align:center;padding:12px 6px}
+  .stat b{display:block;color:var(--red);font-size:28px;font-weight:800;line-height:1.2;direction:ltr}
+  .stat span{font-size:13px;font-weight:700;color:var(--muted)}
+
+  /* HOW TO */
+  .how{background:var(--lime)}
+  .steps{display:grid;gap:14px}
+  .step{background:#fff;border-radius:var(--radius);padding:10px;display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center}
+  .step img{border-radius:12px;aspect-ratio:3/4;object-fit:cover;width:100%}
+  .step .num{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;align-items:center;justify-content:center;font-size:15px;margin-bottom:2px}
+  .step h3{color:var(--red);font-size:18px;font-weight:800}
+  .step p{font-size:14px}
+
+  /* RESULTS */
+  .results{background:var(--green)}
+  .results h2{color:var(--yellow)}
+  .gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gallery img{border-radius:14px;aspect-ratio:1;object-fit:cover;width:100%;border:3px solid #fff}
+  .gallery img:first-child{grid-column:1/-1;aspect-ratio:4/3}
+  .results .btn{margin-top:18px;background:var(--yellow);color:var(--ink);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+
+  footer{background:var(--green-d);color:#cfe7d4;text-align:center;font-size:13px;padding:16px}
+
+  /* sticky CTA */
+  .sticky{position:fixed;bottom:0;left:0;right:0;z-index:50;padding:10px 14px;background:rgba(255,255,255,.96);box-shadow:0 -4px 16px rgba(0,0,0,.1);transition:transform .25s}
+  .sticky .inner{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .sticky .p{font-weight:800;color:var(--green);white-space:nowrap}
+  .sticky.hide{transform:translateY(110%)}
+
+  @media (min-width:520px){
+    .hero{grid-template-columns:1fr 1fr;align-items:center}
+    .gal{order:2}
+    .steps{grid-template-columns:repeat(3,1fr)}
+    .step{grid-template-columns:1fr}
+    .gallery{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="grass" aria-hidden="true"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="gal">
+      <div class="gal-main">
+        <div class="slides" id="slides">
+          <img src="images/hero.webp" alt="بذور طماطم قلب الثور مع هدية بذور بطيخ الكناري" width="1000" height="750">
+          <img src="images/tomato3.webp" alt="ثمار طماطم قلب الثور الكبيرة" width="1000" height="750" loading="lazy">
+          <img src="images/tomato1.webp" alt="طماطم قلب الثور مقطعة" width="1000" height="750" loading="lazy">
+          <img src="images/tomato2.webp" alt="شتلة طماطم قلب الثور في أصيص" width="1000" height="750" loading="lazy">
+          <img src="images/melon.webp" alt="هدية: بذور بطيخ الكناري" width="1000" height="750" loading="lazy">
+        </div>
+        <button type="button" class="nav prev" id="prev" aria-label="السابق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button type="button" class="nav next" id="next" aria-label="التالي"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <span class="count" id="count">1 / 5</span>
+      </div>
+      <div class="thumbs" id="thumbs">
+        <button type="button" aria-label="صورة 1"><img src="images/hero.webp" alt=""></button>
+        <button type="button" aria-label="صورة 2"><img src="images/tomato3.webp" alt=""></button>
+        <button type="button" aria-label="صورة 3"><img src="images/tomato1.webp" alt=""></button>
+        <button type="button" aria-label="صورة 4"><img src="images/tomato2.webp" alt=""></button>
+        <button type="button" aria-label="صورة 5"><img src="images/melon.webp" alt=""></button>
+      </div>
+    </div>
+    <div>
+      <h1>طماطم قلب الثور..<br>ازرعها بنفسك</h1>
+      <div class="seeds">200–300</div>
+      <div class="seeds-sub">بذرة طماطم قلب الثور في كل عبوة (2 غرام)</div>
+      <ul class="bullets">
+        <li>ثمار كبيرة ولحمية تصل إلى 500 غرام</li>
+        <li>نسبة إنبات عالية وبذور مختارة بعناية</li>
+        <li>مناسبة للأصص والحدائق والسطوح</li>
+        <li>طعم حلو وطبيعي بدون مواد كيميائية</li>
+      </ul>
+      <div class="gift">🎁 هدية مجانية: بذور بطيخ الكناري مع كل طلب</div>
+      <div class="price">
+        <span class="now"><span class="js-price">1600</span> دج</span>
+        <span class="tag">الدفع عند الاستلام</span>
+      </div>
+      <a href="#order" class="btn pulse">اطلب الآن</a>
+    </div>
+  </section>
+
+  <!-- MOVING BANNER -->
+  <div class="marquee" aria-label="مزايا العرض"><div class="track"><span>🚚 توصيل لـ 58 ولاية</span><span>💵 الدفع عند الاستلام</span><span>🎁 هدية: بذور بطيخ الكناري</span><span>🌱 200-300 بذرة في كل عبوة</span><span>🍅 ثمار تصل إلى 500 غرام</span><span>📞 تأكيد الطلب بالهاتف</span><span>🚚 توصيل لـ 58 ولاية</span><span>💵 الدفع عند الاستلام</span><span>🎁 هدية: بذور بطيخ الكناري</span><span>🌱 200-300 بذرة في كل عبوة</span><span>🍅 ثمار تصل إلى 500 غرام</span><span>📞 تأكيد الطلب بالهاتف</span></div></div>
+
+  <!-- ORDER FORM -->
+  <section class="order" id="order">
+    <div class="form-box">
+      <form id="orderForm" novalidate>
+        <h2>اطلب الآن والدفع عند الاستلام</h2>
+        <p class="sub">املأ معلوماتك وسنتصل بك لتأكيد الطلب</p>
+
+        <label for="phone">رقم الهاتف</label>
+        <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" pattern="0[567][0-9]{8}" dir="ltr" style="text-align:right" placeholder="0XXXXXXXXX" required>
+
+        <label for="name">الاسم الكامل</label>
+        <input id="name" name="name" autocomplete="name" placeholder="مثال: محمد بن علي" required>
+
+        <label for="wilaya">الولاية</label>
+        <select id="wilaya" name="wilaya" required><option value="">اختر الولاية</option></select>
+
+        <label for="commune">البلدية</label>
+        <select id="commune" name="commune" required disabled><option value="">اختر الولاية أولاً</option></select>
+
+        <label for="reference">المرجع (أقرب معلم)</label>
+        <input id="reference" name="reference" placeholder="مثال: قرب مسجد النور، الحي الجديد">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+
+        <label>الكمية</label>
+        <div class="qty">
+          <button type="button" id="plus" aria-label="زيادة">+</button>
+          <output id="qty">1</output>
+          <button type="button" id="minus" aria-label="نقصان">−</button>
+        </div>
+
+        <div class="summary">
+          <div><span>سعر المنتج</span><span id="sumProduct">1600 دج</span></div>
+          <div><span>التوصيل</span><span>حسب الولاية</span></div>
+          <div><span>الهدية</span><span>🎁 بذور بطيخ الكناري</span></div>
+          <div class="total"><span>المجموع</span><span id="sumTotal">1600 دج + التوصيل</span></div>
+        </div>
+
+        <p class="form-err" id="formErr" role="alert"></p>
+        <button type="submit" class="btn" id="submitBtn">تأكيد الطلب</button>
+        <div class="trust"><span>🚚 توصيل لـ 58 ولاية</span><span>💵 الدفع عند الاستلام</span><span>📞 تأكيد هاتفي</span></div>
+      </form>
+      <div class="thanks" id="thanks">
+        <div class="ok">✅</div>
+        <h3>شكراً! تم استلام طلبك</h3>
+        <p>سنتصل بك قريباً لتأكيد الطلب والتوصيل.</p>
+        <p id="orderNo" style="font-weight:800;margin-top:6px"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section>
+    <div class="stats">
+      <div class="stat"><b>4</b><span>أسابيع للنتيجة</span></div>
+      <div class="stat"><b>58</b><span>ولاية توصيل</span></div>
+    </div>
+  </section>
+
+  <!-- HOW TO PLANT -->
+  <section class="how">
+    <h2>كيف تزرعها؟</h2>
+    <div class="steps">
+      <div class="step"><img src="images/step1.gif" alt="إنبات بذور الطماطم على منديل ورقي مبلل" loading="lazy"><div><span class="num">1</span><h3>أنبِت البذور</h3><p>ضع البذور على منديل ورقي مبلل في صحن، ورُشّها بالماء يومياً حتى تنبت (3-7 أيام).</p></div></div>
+      <div class="step"><img src="images/step2.gif" alt="نقل البذور المنبتة إلى أصيص صغير" loading="lazy"><div><span class="num">2</span><h3>انقلها إلى أصيص</h3><p>انقل البذور المنبتة بلطف إلى أصيص صغير فيه تربة خصبة، وغطِّها واسقها.</p></div></div>
+      <div class="step"><img src="images/step3.gif" alt="غرس شتلة الطماطم في الحديقة" loading="lazy"><div><span class="num">3</span><h3>اغرسها في الحديقة</h3><p>عندما تكبر الشتلة، اغرسها في الحديقة أو أصيص كبير في مكان مشمس واسقها بانتظام.</p></div></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results">
+    <h2>النتيجة</h2>
+    <div class="gallery">
+      <img src="images/tomato2.webp" alt="شتلة طماطم قلب الثور مثمرة في أصيص" loading="lazy">
+      <img src="images/tomato3.webp" alt="ثمار طماطم قلب الثور في اليد" loading="lazy">
+      <img src="images/tomato1.webp" alt="طماطم قلب الثور مقطعة" loading="lazy">
+    </div>
+    <a href="#order" class="btn">اطلب بذورك الآن 🍅</a>
+  </section>
+
+  <footer>© [STORE NAME] · جميع الحقوق محفوظة</footer>
+</div>
+
+<div class="sticky" id="sticky">
+  <div class="inner">
+    <span class="p"><span class="js-price">1600</span> دج</span>
+    <a href="#order" class="btn">اطلب الآن</a>
+  </div>
+</div>
+
+<script>
+  // Price comes from the admin price sheet (/api/config). 1600 is only the fallback.
+  let PRICE = 1600;
+  const DELIVERY = null;   // e.g. 600 (null = "حسب الولاية")
+
+  // Visitor session id (links the lead to the order)
+  const SID = localStorage.getItem('sid') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2));
+  localStorage.setItem('sid', SID);
+
+  // Wilaya + commune dropdowns
+  const sel=document.getElementById('wilaya'), comSel=document.getElementById('commune');
+  let COMMUNES={};
+  fetch('/communes.json').then(r=>r.json()).then(d=>{
+    COMMUNES=d;
+    Object.entries(d).forEach(([code,w])=>{const o=document.createElement('option');o.value=code;o.textContent=code+' - '+w.name;sel.appendChild(o)});
+  });
+  sel.addEventListener('change',()=>{
+    const w=COMMUNES[sel.value];
+    comSel.innerHTML='';
+    const first=document.createElement('option');first.value='';first.textContent=w?'اختر البلدية':'اختر الولاية أولاً';comSel.appendChild(first);
+    if(w){w.communes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;comSel.appendChild(o)});comSel.disabled=false}else comSel.disabled=true;
+  });
+
+  fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
+
+  // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
+  const phoneEl=document.getElementById('phone');
+  let leadTimer, lastLead='';
+  function leadPayload(){const f=document.getElementById('orderForm');return {sid:SID,phone:phoneEl.value,name:f.name.value,wilaya:sel.value?(sel.value+' - '+(COMMUNES[sel.value]||{}).name):'',commune:comSel.value,reference:f.reference.value,website:f.website.value}}
+  function saveLead(){
+    const p=leadPayload(); if(p.phone.length<3) return;
+    const key=JSON.stringify(p); if(key===lastLead) return; lastLead=key;
+    fetch('/api/lead',{method:'POST',headers:{'content-type':'application/json'},body:key,keepalive:true}).catch(()=>{});
+  }
+  phoneEl.addEventListener('input',()=>{
+    const v=phoneEl.value.replace(/\D/g,'').slice(0,10);
+    if(phoneEl.value!==v) phoneEl.value=v;
+    phoneEl.classList.remove('err');
+    clearTimeout(leadTimer); if(v.length>=3) leadTimer=setTimeout(saveLead,700);
+  });
+  ['name','wilaya','commune','reference'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(phoneEl.value.length>=3)saveLead()}));
+  window.addEventListener('pagehide',saveLead);
+
+  // Quantity + totals
+  let qty=1; const qEl=document.getElementById('qty');
+  function render(){
+    qEl.textContent=qty;
+    if(PRICE!==null){
+      document.getElementById('sumProduct').textContent=(PRICE*qty)+' دج';
+      document.getElementById('sumTotal').textContent=DELIVERY!==null?(PRICE*qty+DELIVERY)+' دج':(PRICE*qty)+' دج + التوصيل';
+    }
+  }
+  document.getElementById('plus').onclick=()=>{qty=Math.min(10,qty+1);render()};
+  document.getElementById('minus').onclick=()=>{qty=Math.max(1,qty-1);render()};
+
+  // Product gallery: swipe, arrows, thumbnails
+  const slides=document.getElementById('slides'),thumbs=[...document.querySelectorAll('#thumbs button')],cnt=document.getElementById('count');
+  let cur=0;
+  function go(i){cur=(i+thumbs.length)%thumbs.length;const s=slides.children[cur];slides.scrollTo({left:s.offsetLeft-slides.offsetLeft-(slides.children[0].offsetLeft-slides.offsetLeft),behavior:'smooth'});mark()}
+  function mark(){thumbs.forEach((t,i)=>t.classList.toggle('on',i===cur));cnt.textContent=(cur+1)+' / '+thumbs.length}
+  thumbs.forEach((t,i)=>t.onclick=()=>go(i));
+  document.getElementById('prev').onclick=()=>go(cur-1);
+  document.getElementById('next').onclick=()=>go(cur+1);
+  let st;slides.addEventListener('scroll',()=>{clearTimeout(st);st=setTimeout(()=>{const i=Math.round(Math.abs(slides.scrollLeft)/slides.clientWidth);if(i!==cur){cur=i;mark()}},80)},{passive:true});
+  mark();
+
+  // Hide sticky bar while the form is on screen
+  const sticky=document.getElementById('sticky');
+  new IntersectionObserver(e=>sticky.classList.toggle('hide',e[0].isIntersecting),{threshold:.15}).observe(document.getElementById('order'));
+
+  // Submit
+  document.getElementById('orderForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const f=e.target, errEl=document.getElementById('formErr'), btn=document.getElementById('submitBtn');
+    errEl.textContent='';
+    let ok=true;
+    ['name','wilaya','commune'].forEach(id=>{const el=f[id];const bad=!el.value.trim();el.classList.toggle('err',bad);if(bad)ok=false});
+    const ph=phoneEl.value;const badPh=!/^0[567]\d{8}$/.test(ph);phoneEl.classList.toggle('err',badPh);if(badPh)ok=false;
+    if(!ok){if(badPh)errEl.textContent='رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 06 أو 07';f.querySelector('.err').focus();return}
+    btn.disabled=true;btn.textContent='جاري الإرسال...';
+    try{
+      const r=await fetch('/api/order',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sid:SID,name:f.name.value.trim(),phone:ph,wilaya_code:sel.value,commune:comSel.value,reference:f.reference.value.trim(),qty,website:f.website.value})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.ok){
+        if(d.errors){Object.keys(d.errors).forEach(k=>{const el=f[k==='wilaya'?'wilaya':k];if(el)el.classList.add('err')});errEl.textContent=Object.values(d.errors)[0]}
+        else errEl.textContent=d.error||'تعذر إرسال الطلب، حاول مرة أخرى';
+        return;
+      }
+      if(d.id) document.getElementById('orderNo').textContent='رقم طلبك: #'+d.id;
+      f.style.display='none';document.getElementById('thanks').style.display='block';
+      document.getElementById('order').scrollIntoView({behavior:'smooth'});
+    }catch(_){errEl.textContent='تحقق من اتصالك بالإنترنت وحاول مرة أخرى'}
+    finally{btn.disabled=false;btn.textContent='تأكيد الطلب'}
+  });
+</script>
+</body>
+</html>
