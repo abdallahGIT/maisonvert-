@@ -92,6 +92,12 @@
   .form-err{color:var(--red);font-weight:700;font-size:14px;text-align:center;min-height:0;margin:4px 0}
   .form-err:empty{display:none}
   .btn:disabled{opacity:.7;cursor:wait}
+  .dtype{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .dtype label{position:relative;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid #cfe3d3;border-radius:12px;padding:10px 6px;cursor:pointer;font-weight:700;font-size:15px;background:#fbfffb;text-align:center}
+  .dtype input{position:absolute;opacity:0;pointer-events:none}
+  .dtype label:has(input:checked){border-color:var(--green);background:#eaf7ee;box-shadow:0 0 0 2px rgba(15,107,47,.15)}
+  .dtype label.off{opacity:.45;cursor:not-allowed}
+  .dtype small{font-weight:600;color:var(--muted);font-size:13px}
   .thanks{display:none;text-align:center;padding:20px 6px}
   .thanks .ok{font-size:54px}
   .thanks h3{color:var(--green);font-size:22px;font-weight:800}
@@ -204,9 +210,15 @@
         <label for="commune">البلدية</label>
         <select id="commune" name="commune" required disabled><option value="">اختر الولاية أولاً</option></select>
 
+        <label>طريقة التوصيل</label>
+        <div class="dtype" id="dtype">
+          <label id="dtHome"><input type="radio" name="delivery_type" value="home" checked>🏠 إلى المنزل<small id="feeHome">اختر الولاية</small></label>
+          <label id="dtDesk"><input type="radio" name="delivery_type" value="desk">🏢 إلى المكتب<small id="feeDesk">اختر الولاية</small></label>
+        </div>
+
         <label for="reference">المرجع (أقرب معلم)</label>
         <input id="reference" name="reference" placeholder="مثال: قرب مسجد النور، الحي الجديد">
-        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none">
 
         <label>الكمية</label>
         <div class="qty">
@@ -217,7 +229,7 @@
 
         <div class="summary">
           <div><span>سعر المنتج</span><span id="sumProduct">1600 دج</span></div>
-          <div><span>التوصيل</span><span>حسب الولاية</span></div>
+          <div><span>التوصيل</span><span id="sumDelivery">اختر الولاية</span></div>
           <div><span>الهدية</span><span>🎁 بذور بطيخ الكناري</span></div>
           <div class="total"><span>المجموع</span><span id="sumTotal">1600 دج + التوصيل</span></div>
         </div>
@@ -277,7 +289,7 @@
 <script>
   // Price comes from the admin price sheet (/api/config). 1600 is only the fallback.
   let PRICE = 1600;
-  const DELIVERY = null;   // e.g. 600 (null = "حسب الولاية")
+  let FEES = {};           // delivery fees per wilaya, from the admin page
 
   // Visitor session id (links the lead to the order)
   const SID = localStorage.getItem('sid') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2));
@@ -288,16 +300,18 @@
   let COMMUNES={};
   fetch('/communes.json').then(r=>r.json()).then(d=>{
     COMMUNES=d;
-    Object.entries(d).forEach(([code,w])=>{const o=document.createElement('option');o.value=code;o.textContent=code+' - '+w.name;sel.appendChild(o)});
+    Object.entries(d).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([code,w])=>{const o=document.createElement('option');o.value=code;o.textContent=code+' - '+w.name;sel.appendChild(o)});
   });
   sel.addEventListener('change',()=>{
     const w=COMMUNES[sel.value];
     comSel.innerHTML='';
     const first=document.createElement('option');first.value='';first.textContent=w?'اختر البلدية':'اختر الولاية أولاً';comSel.appendChild(first);
     if(w){w.communes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;comSel.appendChild(o)});comSel.disabled=false}else comSel.disabled=true;
+    render();
   });
+  document.getElementById('dtype').addEventListener('change',render);
 
-  fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
+  fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;FEES=c.fees||{};document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
 
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
   const phoneEl=document.getElementById('phone');
@@ -319,12 +333,29 @@
 
   // Quantity + totals
   let qty=1; const qEl=document.getElementById('qty');
+  function currentFee(){
+    // returns a number, or null when the fee is unknown for this wilaya
+    const f=FEES[sel.value]; if(!sel.value||!f) return null;
+    const t=document.querySelector('input[name=delivery_type]:checked').value;
+    return f[t]==null?null:f[t];
+  }
   function render(){
     qEl.textContent=qty;
-    if(PRICE!==null){
-      document.getElementById('sumProduct').textContent=(PRICE*qty)+' دج';
-      document.getElementById('sumTotal').textContent=DELIVERY!==null?(PRICE*qty+DELIVERY)+' دج':(PRICE*qty)+' دج + التوصيل';
+    const f=FEES[sel.value]||null;
+    const fh=document.getElementById('feeHome'), fd=document.getElementById('feeDesk'), desk=document.querySelector('input[value=desk]');
+    if(!sel.value){fh.textContent='اختر الولاية';fd.textContent='اختر الولاية'}
+    else if(!f){fh.textContent='يحدد عند التأكيد';fd.textContent='يحدد عند التأكيد'}
+    else{
+      fh.textContent=f.home==null?'غير متوفر':f.home+' دج';
+      fd.textContent=f.desk==null?'غير متوفر':f.desk+' دج';
     }
+    const deskOff=!!(f&&f.desk==null&&f.home!=null);
+    desk.disabled=deskOff; document.getElementById('dtDesk').classList.toggle('off',deskOff);
+    if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
+    const fee=currentFee();
+    document.getElementById('sumProduct').textContent=(PRICE*qty)+' دج';
+    document.getElementById('sumDelivery').textContent=!sel.value?'اختر الولاية':(fee==null?'يحدد عند التأكيد':fee+' دج');
+    document.getElementById('sumTotal').textContent=fee==null?(PRICE*qty)+' دج + التوصيل':(PRICE*qty+fee)+' دج';
   }
   document.getElementById('plus').onclick=()=>{qty=Math.min(10,qty+1);render()};
   document.getElementById('minus').onclick=()=>{qty=Math.max(1,qty-1);render()};
@@ -355,10 +386,10 @@
     if(!ok){if(badPh)errEl.textContent='رقم الهاتف يجب أن يكون 10 أرقام ويبدأ بـ 05 أو 06 أو 07';f.querySelector('.err').focus();return}
     btn.disabled=true;btn.textContent='جاري الإرسال...';
     try{
-      const r=await fetch('/api/order',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sid:SID,name:f.name.value.trim(),phone:ph,wilaya_code:sel.value,commune:comSel.value,reference:f.reference.value.trim(),qty,website:f.website.value})});
+      const r=await fetch('/api/order',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sid:SID,name:f.name.value.trim(),phone:ph,wilaya_code:sel.value,commune:comSel.value,delivery_type:document.querySelector('input[name=delivery_type]:checked').value,reference:f.reference.value.trim(),qty,website:f.website.value})});
       const d=await r.json().catch(()=>({}));
       if(!r.ok||!d.ok){
-        if(d.errors){Object.keys(d.errors).forEach(k=>{const el=f[k==='wilaya'?'wilaya':k];if(el)el.classList.add('err')});errEl.textContent=Object.values(d.errors)[0]}
+        if(d.errors){Object.keys(d.errors).forEach(k=>{const el=f[k==='wilaya'?'wilaya':k];if(el&&el.classList)el.classList.add('err')});errEl.textContent=Object.values(d.errors)[0]}
         else errEl.textContent=d.error||'تعذر إرسال الطلب، حاول مرة أخرى';
         return;
       }

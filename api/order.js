@@ -1,7 +1,7 @@
 // POST /api/order — creates a COD order.
 // The database save and the Telegram alert run side by side and independently:
 // if one fails, the other still happens, so an order is never lost.
-const { query, getSettings, DEFAULT_SETTINGS } = require('../lib/db');
+const { query, getSettings, getDeliveryFees, DEFAULT_SETTINGS } = require('../lib/db');
 const telegram = require('../lib/telegram');
 const { send, readBody, clean, digits, clientIp } = require('../lib/http');
 const COMMUNES = require('../lib/communes.json');
@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
   const commune = clean(b.commune, 80);
   const reference = clean(b.reference, 200);
   const qty = Math.min(10, Math.max(1, parseInt(b.qty, 10) || 1));
+  const deliveryType = b.delivery_type === 'desk' ? 'desk' : 'home';
 
   const errors = {};
   if (!/^0[567]\d{8}$/.test(phone)) errors.phone = 'رقم الهاتف غير صحيح';
@@ -28,11 +29,20 @@ module.exports = async (req, res) => {
 
   // Price comes from the admin price sheet, never from the browser.
   let price = DEFAULT_SETTINGS.sell_price;
-  try { price = (await getSettings()).sell_price || price; } catch (_) { /* DB down: use default */ }
+  let fee = 0;
+  let deskUnavailable = false;
+  try {
+    const [s, fees] = await Promise.all([getSettings(), getDeliveryFees()]);
+    price = s.sell_price || price;
+    const f = fees[code];
+    if (f && deliveryType === 'desk' && f.desk == null && f.home != null) deskUnavailable = true;
+    fee = (f && f[deliveryType]) || 0;
+  } catch (_) { /* DB down: use defaults */ }
+  if (deskUnavailable) return send(res, 400, { ok: false, errors: { delivery_type: 'التوصيل للمكتب غير متوفر في هذه الولاية' } });
 
   const order = {
     session_id: clean(b.sid, 64) || null, name, phone, wilaya_code: code, wilaya: w.name,
-    commune, reference, qty, unit_price: price, total: price * qty, ip: clientIp(req),
+    commune, reference, qty, unit_price: price, delivery_type: deliveryType, delivery_fee: fee, total: price * qty + fee, ip: clientIp(req),
   };
 
   // 1) Save to DB (with a duplicate guard: same phone within 15 minutes = same order)
@@ -43,9 +53,9 @@ module.exports = async (req, res) => {
     );
     if (dup.rows[0]) return { id: dup.rows[0].id, duplicate: true };
     const r = await query(
-      `INSERT INTO orders (session_id, name, phone, wilaya_code, wilaya, commune, reference, qty, unit_price, total, ip)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
-      [order.session_id, name, phone, code, w.name, commune, reference, qty, price, order.total, order.ip]
+      `INSERT INTO orders (session_id, name, phone, wilaya_code, wilaya, commune, reference, qty, unit_price, total, ip, delivery_type, delivery_fee)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id`,
+      [order.session_id, name, phone, code, w.name, commune, reference, qty, price, order.total, order.ip, deliveryType, fee]
     );
     const id = r.rows[0].id;
     if (order.session_id) {
@@ -70,5 +80,5 @@ module.exports = async (req, res) => {
   const dbOk = dbRes.status === 'fulfilled';
   const tgOk = tgRes.status === 'fulfilled' && tgRes.value.ok;
   if (!dbOk && !tgOk) return send(res, 500, { ok: false, error: 'تعذر إرسال الطلب، حاول مرة أخرى' });
-  return send(res, 200, { ok: true, id: dbOk ? dbRes.value.id : null, total: order.total });
+  return send(res, 200, { ok: true, id: dbOk ? dbRes.value.id : null, total: order.total, delivery_fee: fee });
 };
