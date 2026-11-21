@@ -1,6 +1,7 @@
 // GET /api/health — shows whether the database and Telegram are configured (never shows secrets).
 const { query, dbUrl } = require('../lib/db');
 const { send } = require('../lib/http');
+const telegram = require('../lib/telegram');
 
 module.exports = async (req, res) => {
   const out = {
@@ -18,5 +19,6 @@ module.exports = async (req, res) => {
     out.database_ok = false;
     out.database_error = String(e.message || e).replace(/postgres(ql)?:\/\/[^\s]+/g, '[url]');
   }
+  out.telegram = await telegram.check().catch((e) => ({ error: String(e.message || e) }));
   send(res, 200, out);
 };
