@@ -201,6 +201,10 @@ module.exports = async (req, res) => {
       }
 
       // ---- Osen Logistics ----
+      case 'osen_settings':
+        return send(res, 200, { ok: true, ids: await osen.getIds(), check: await osen.check().catch((e) => ({ error: e.message })) });
+      case 'save_osen_settings':
+        return send(res, 200, { ok: true, ids: await osen.saveIds(b) });
       case 'osen_queue': { // body: {ids:[...]} or {all_confirmed:true}
         let ids = Array.isArray(b.ids) ? b.ids : [];
         if (b.all_confirmed) ids = (await query(`SELECT id FROM orders WHERE status = 'confirmed' AND (courier_status IS NULL OR courier_status = 'error')`)).rows.map((r) => r.id);
