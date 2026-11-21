@@ -121,9 +121,9 @@ module.exports = async (req, res) => {
           query(`SELECT * FROM orders ${w} ORDER BY id DESC LIMIT 50 OFFSET ${page * 50}`, params),
           query(`SELECT status, count(*)::int AS n FROM orders GROUP BY status`),
           query(`SELECT count(*) FILTER (WHERE courier_status = 'queued' AND status <> 'cancelled')::int AS queued,
-                        count(*) FILTER (WHERE courier_status IS NULL AND status = 'confirmed')::int AS confirmed_not_sent FROM orders`),
+                        count(*) FILTER (WHERE (courier_status IS NULL OR courier_status = 'error') AND status = 'confirmed')::int AS confirmed_not_sent FROM orders`),
         ]);
-        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])), osen: osenCounts.rows[0] });
+        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])), osen: { ...osenCounts.rows[0], api: osen.apiConfigured() } });
       }
 
       case 'update_order': {
@@ -203,9 +203,9 @@ module.exports = async (req, res) => {
       // ---- Osen Logistics ----
       case 'osen_queue': { // body: {ids:[...]} or {all_confirmed:true}
         let ids = Array.isArray(b.ids) ? b.ids : [];
-        if (b.all_confirmed) ids = (await query(`SELECT id FROM orders WHERE status = 'confirmed' AND courier_status IS NULL`)).rows.map((r) => r.id);
+        if (b.all_confirmed) ids = (await query(`SELECT id FROM orders WHERE status = 'confirmed' AND (courier_status IS NULL OR courier_status = 'error')`)).rows.map((r) => r.id);
         const r = await osen.queueOrders(ids);
-        return send(res, 200, { ok: true, queued: r.queued, message: r.message });
+        return send(res, 200, { ok: true, queued: r.queued, failed: r.failed || 0, api: !!r.api, message: r.message });
       }
       case 'osen_unqueue': {
         await query(`UPDATE orders SET courier_status = NULL, courier_at = NULL, updated_at = now() WHERE id = $1 AND courier_status = 'queued'`, [parseInt(b.id, 10)]);

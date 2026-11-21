@@ -289,7 +289,8 @@
 <script>
   // Price comes from the admin price sheet (/api/config). 1600 is only the fallback.
   let PRICE = 1600;
-  let FEES = {};           // delivery fees per wilaya, from the admin page
+  let FEES = {};
+  let DESKS = null;        // Osen stop desks per commune           // delivery fees per wilaya, from the admin page
 
   // Visitor session id (links the lead to the order)
   const SID = localStorage.getItem('sid') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2));
@@ -312,7 +313,7 @@
   document.getElementById('dtype').addEventListener('change',render);
   comSel.addEventListener('change',render);
 
-  fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;FEES=c.fees||{};document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
+  fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
 
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
   const phoneEl=document.getElementById('phone');
@@ -352,9 +353,12 @@
     }
     // desk only where Osen has an office: desk price set, and (if a list is set) the chosen commune is in it
     const list=(f&&f.desk_communes)||[];
-    const deskOff=!!(f&&(f.home!=null||f.desk!=null)&&(f.desk==null||(list.length&&comSel.value&&!list.includes(comSel.value))));
-    if(f&&f.desk!=null&&list.length&&!comSel.value) fd.textContent=f.desk+' دج — اختر البلدية';
+    const od=DESKS?(DESKS[sel.value]||{}):null;
+    const noDeskHere=comSel.value&&(list.length?!list.includes(comSel.value):(od?!od[comSel.value]:false));
+    const deskOff=!!(f&&(f.home!=null||f.desk!=null)&&(f.desk==null||noDeskHere));
+    if(f&&f.desk!=null&&(list.length||od)&&!comSel.value) fd.textContent=f.desk+' دج — اختر البلدية';
     else if(f&&f.desk!=null&&deskOff) fd.textContent='لا يوجد مكتب في هذه البلدية';
+    else if(f&&f.desk!=null&&od&&od[comSel.value]) fd.textContent=f.desk+' دج — '+od[comSel.value];
     desk.disabled=deskOff; document.getElementById('dtDesk').classList.toggle('off',deskOff);
     if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
     const fee=currentFee();

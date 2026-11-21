@@ -23,5 +23,6 @@ module.exports = async (req, res) => {
   if (out.telegram && out.telegram.token_ok) {
     out.telegram.buttons_webhook = await require('./telegram').ensureWebhook(req).catch((e) => ({ ok: false, error: e.message }));
   }
+  out.osen = await require('../lib/osen').check().catch((e) => ({ error: e.message }));
   send(res, 200, out);
 };

@@ -3,6 +3,7 @@
 // if one fails, the other still happens, so an order is never lost.
 const { query, getSettings, getDeliveryFees, deskAvailable, DEFAULT_SETTINGS } = require('../lib/db');
 const telegram = require('../lib/telegram');
+const osen = require('../lib/osen');
 const { send, readBody, clean, digits, clientIp } = require('../lib/http');
 const COMMUNES = require('../lib/communes.json');
 
@@ -32,10 +33,10 @@ module.exports = async (req, res) => {
   let fee = 0;
   let deskUnavailable = false;
   try {
-    const [s, fees] = await Promise.all([getSettings(), getDeliveryFees()]);
+    const [s, fees, desks] = await Promise.all([getSettings(), getDeliveryFees(), deliveryType === 'desk' ? osen.deskMap({ [code]: w }).catch(() => null) : null]);
     price = s.sell_price || price;
     const f = fees[code];
-    if (f && (f.home != null || f.desk != null) && deliveryType === 'desk' && !deskAvailable(f, commune)) deskUnavailable = true;
+    if (f && (f.home != null || f.desk != null) && deliveryType === 'desk' && !deskAvailable(f, commune, desks ? desks[code] || {} : null)) deskUnavailable = true;
     fee = (f && f[deliveryType]) || 0;
   } catch (_) { /* DB down: use defaults */ }
   if (deskUnavailable) return send(res, 400, { ok: false, errors: { delivery_type: 'التوصيل للمكتب غير متوفر في هذه البلدية، اختر التوصيل للمنزل' } });
