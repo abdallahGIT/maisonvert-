@@ -1,6 +1,7 @@
 // /api/admin?action=... — everything the admin page needs. Requires the x-admin-key header = ADMIN_PASSWORD.
 const { query, getSettings, saveSettings, getDeliveryFees, saveDeliveryFees } = require('../lib/db');
 const telegram = require('../lib/telegram');
+const osen = require('../lib/osen');
 const { send, readBody, isAdmin, clean } = require('../lib/http');
 
 const ORDER_STATUSES = ['new', 'confirmed', 'no_answer', 'cancelled', 'shipped', 'delivered', 'returned'];
@@ -116,11 +117,13 @@ module.exports = async (req, res) => {
         if (ORDER_STATUSES.includes(status)) { params.push(status); where.push(`status = $${params.length}`); }
         if (q) { params.push('%' + q + '%'); where.push(`(phone LIKE $${params.length} OR name ILIKE $${params.length} OR commune ILIKE $${params.length} OR wilaya ILIKE $${params.length})`); }
         const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
-        const [rows, counts] = await Promise.all([
+        const [rows, counts, osenCounts] = await Promise.all([
           query(`SELECT * FROM orders ${w} ORDER BY id DESC LIMIT 50 OFFSET ${page * 50}`, params),
           query(`SELECT status, count(*)::int AS n FROM orders GROUP BY status`),
+          query(`SELECT count(*) FILTER (WHERE courier_status = 'queued' AND status <> 'cancelled')::int AS queued,
+                        count(*) FILTER (WHERE courier_status IS NULL AND status = 'confirmed')::int AS confirmed_not_sent FROM orders`),
         ]);
-        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])) });
+        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])), osen: osenCounts.rows[0] });
       }
 
       case 'update_order': {
@@ -195,6 +198,31 @@ module.exports = async (req, res) => {
         res.setHeader('content-type', 'text/csv; charset=utf-8');
         res.setHeader('content-disposition', `attachment; filename="orders-${todayAlgiers()}.csv"`);
         return res.end(csv);
+      }
+
+      // ---- Osen Logistics ----
+      case 'osen_queue': { // body: {ids:[...]} or {all_confirmed:true}
+        let ids = Array.isArray(b.ids) ? b.ids : [];
+        if (b.all_confirmed) ids = (await query(`SELECT id FROM orders WHERE status = 'confirmed' AND courier_status IS NULL`)).rows.map((r) => r.id);
+        const r = await osen.queueOrders(ids);
+        return send(res, 200, { ok: true, queued: r.queued, message: r.message });
+      }
+      case 'osen_unqueue': {
+        await query(`UPDATE orders SET courier_status = NULL, courier_at = NULL, updated_at = now() WHERE id = $1 AND courier_status = 'queued'`, [parseInt(b.id, 10)]);
+        return send(res, 200, { ok: true });
+      }
+      case 'osen_mark': { // after the parcel is created in Osen: save its tracking number
+        const r = await query(`UPDATE orders SET courier_status = 'sent', courier_ref = $2, courier_at = now(), updated_at = now() WHERE id = $1 RETURNING *`,
+          [parseInt(b.id, 10), clean(b.courier_ref, 60) || null]);
+        return send(res, 200, { ok: true, order: r.rows[0] });
+      }
+      case 'osen_export': { // CSV of the send list; marks them 'exported' (?mark=0 to only preview)
+        const r = await osen.exportQueued({ mark: url.searchParams.get('mark') !== '0' });
+        res.statusCode = 200;
+        res.setHeader('content-type', 'text/csv; charset=utf-8');
+        res.setHeader('x-count', String(r.count));
+        res.setHeader('content-disposition', `attachment; filename="osen-${todayAlgiers()}.csv"`);
+        return res.end(r.csv);
       }
 
       case 'telegram_chats': {

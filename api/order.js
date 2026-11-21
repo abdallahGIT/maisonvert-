@@ -1,7 +1,7 @@
 // POST /api/order — creates a COD order.
 // The database save and the Telegram alert run side by side and independently:
 // if one fails, the other still happens, so an order is never lost.
-const { query, getSettings, getDeliveryFees, DEFAULT_SETTINGS } = require('../lib/db');
+const { query, getSettings, getDeliveryFees, deskAvailable, DEFAULT_SETTINGS } = require('../lib/db');
 const telegram = require('../lib/telegram');
 const { send, readBody, clean, digits, clientIp } = require('../lib/http');
 const COMMUNES = require('../lib/communes.json');
@@ -35,10 +35,10 @@ module.exports = async (req, res) => {
     const [s, fees] = await Promise.all([getSettings(), getDeliveryFees()]);
     price = s.sell_price || price;
     const f = fees[code];
-    if (f && deliveryType === 'desk' && f.desk == null && f.home != null) deskUnavailable = true;
+    if (f && (f.home != null || f.desk != null) && deliveryType === 'desk' && !deskAvailable(f, commune)) deskUnavailable = true;
     fee = (f && f[deliveryType]) || 0;
   } catch (_) { /* DB down: use defaults */ }
-  if (deskUnavailable) return send(res, 400, { ok: false, errors: { delivery_type: 'التوصيل للمكتب غير متوفر في هذه الولاية' } });
+  if (deskUnavailable) return send(res, 400, { ok: false, errors: { delivery_type: 'التوصيل للمكتب غير متوفر في هذه البلدية، اختر التوصيل للمنزل' } });
 
   const order = {
     session_id: clean(b.sid, 64) || null, name, phone, wilaya_code: code, wilaya: w.name,
@@ -59,8 +59,16 @@ module.exports = async (req, res) => {
     );
     const id = r.rows[0].id;
     if (order.session_id) {
-      await query(`UPDATE leads SET status = 'ordered', order_id = $2, updated_at = now() WHERE session_id = $1`, [order.session_id, id])
-        .catch(() => {});
+      const l = await query(`UPDATE leads SET status = 'ordered', order_id = $2, updated_at = now() WHERE session_id = $1 RETURNING *`, [order.session_id, id])
+        .catch(() => null);
+      const lead = l && l.rows[0];
+      // the lead alert in Telegram now says the visitor completed the order (no more call buttons)
+      if (lead && Array.isArray(lead.tg_msgs)) {
+        await Promise.allSettled(lead.tg_msgs.map((m) => telegram.call('editMessageText', {
+          chat_id: m.chat_id, message_id: m.message_id, parse_mode: 'HTML',
+          text: telegram.leadMessage(lead, 'ordered') + ` — طلب #${id}`,
+        })));
+      }
     }
     return { id, duplicate: false };
   })();

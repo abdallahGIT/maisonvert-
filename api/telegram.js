@@ -3,6 +3,7 @@
 //   GET : (re)registers this webhook with Telegram and shows its status.
 const { query } = require('../lib/db');
 const telegram = require('../lib/telegram');
+const osen = require('../lib/osen');
 const { send, readBody } = require('../lib/http');
 
 const ALLOWED = ['confirmed', 'cancelled', 'no_answer', 'shipped', 'delivered', 'returned'];
@@ -39,7 +40,13 @@ async function handleButton(cb) {
   if (!chats.map(String).includes(String(chatId))) {
     return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'غير مسموح', show_alert: true });
   }
-  const m = /^st:(\d+):([a-z_]+)$/.exec(cb.data || '');
+  const who = [cb.from && cb.from.first_name, cb.from && cb.from.last_name].filter(Boolean).join(' ');
+  const time = new Date().toLocaleTimeString('fr-DZ', { timeZone: 'Africa/Algiers', hour: '2-digit', minute: '2-digit' });
+  const data = cb.data || '';
+  if (data.startsWith('ld:')) return handleLeadButton(cb, chatId, msg, who, time);
+  if (data.startsWith('os:')) return handleOsenButton(cb, chatId, msg, who, time);
+
+  const m = /^st:(\d+):([a-z_]+)$/.exec(data);
   if (!m || !ALLOWED.includes(m[2])) return telegram.call('answerCallbackQuery', { callback_query_id: cb.id });
   const id = parseInt(m[1], 10);
   const status = m[2];
@@ -58,13 +65,62 @@ async function handleButton(cb) {
   }
   if (!order) return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'الطلب غير موجود', show_alert: true });
 
-  const who = [cb.from && cb.from.first_name, cb.from && cb.from.last_name].filter(Boolean).join(' ');
-  const time = new Date().toLocaleTimeString('fr-DZ', { timeZone: 'Africa/Algiers', hour: '2-digit', minute: '2-digit' });
   const text = telegram.orderMessage(order, true).replace('طلب جديد', 'طلب') +
     `\n\n<b>الحالة: ${telegram.STATUS_LABEL[status]}</b>\n<i>${telegram.esc(who)} — ${time}</i>`;
 
   await Promise.allSettled([
     telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: `طلب #${id}: ${telegram.STATUS_LABEL[status]}` }),
+    telegram.call('editMessageText', { chat_id: chatId, message_id: msg.message_id, text, parse_mode: 'HTML', ...telegram.orderKeyboard(id) }),
+  ]);
+}
+
+const LEAD_ALLOWED = ['called', 'no_answer', 'not_interested'];
+
+async function handleLeadButton(cb, chatId, msg, who, time) {
+  const m = /^ld:(\d+):([a-z_]+)$/.exec(cb.data);
+  if (!m || !LEAD_ALLOWED.includes(m[2])) return telegram.call('answerCallbackQuery', { callback_query_id: cb.id });
+  const id = parseInt(m[1], 10);
+  let lead;
+  try {
+    const r = await query(`UPDATE leads SET status = $2, updated_at = now() WHERE id = $1 AND status <> 'ordered' RETURNING *`, [id, m[2]]);
+    lead = r.rows[0];
+    if (!lead) {
+      const x = await query(`SELECT * FROM leads WHERE id = $1`, [id]);
+      if (x.rows[0] && x.rows[0].status === 'ordered') {
+        return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'هذا الزبون أكمل الطلب بالفعل ✅', show_alert: true });
+      }
+      return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'Lead غير موجود', show_alert: true });
+    }
+  } catch (e) {
+    return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'خطأ في قاعدة البيانات، حاول مرة أخرى', show_alert: true });
+  }
+  const label = telegram.LEAD_LABEL[m[2]];
+  await Promise.allSettled([
+    telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: `Lead #${id}: ${label}` }),
+    telegram.call('editMessageText', {
+      chat_id: chatId, message_id: msg.message_id, parse_mode: 'HTML',
+      text: telegram.leadMessage(lead, m[2]) + `\n<i>${telegram.esc(who)} — ${time}</i>`, ...telegram.leadKeyboard(id),
+    }),
+  ]);
+}
+
+// "📤 إرسال إلى Osen": puts the order in the Osen send list (admin → الطلبات → Osen).
+async function handleOsenButton(cb, chatId, msg, who, time) {
+  const m = /^os:(\d+)$/.exec(cb.data);
+  if (!m) return telegram.call('answerCallbackQuery', { callback_query_id: cb.id });
+  const id = parseInt(m[1], 10);
+  let r;
+  try {
+    r = await osen.queueOrders([id]);
+  } catch (e) {
+    return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'خطأ في قاعدة البيانات، حاول مرة أخرى', show_alert: true });
+  }
+  const order = r.orders[0];
+  if (!order) return telegram.call('answerCallbackQuery', { callback_query_id: cb.id, text: 'الطلب غير موجود أو ملغى', show_alert: true });
+  const text = telegram.orderMessage(order, true).replace('طلب جديد', 'طلب') +
+    `\n\n<b>الحالة: ${telegram.STATUS_LABEL[order.status] || order.status}</b>\n<i>${telegram.esc(who)} — ${time}</i>`;
+  await Promise.allSettled([
+    telegram.call('answerCallbackQuery', { callback_query_id: cb.id, show_alert: true, text: r.message }),
     telegram.call('editMessageText', { chat_id: chatId, message_id: msg.message_id, text, parse_mode: 'HTML', ...telegram.orderKeyboard(id) }),
   ]);
 }

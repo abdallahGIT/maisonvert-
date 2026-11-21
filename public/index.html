@@ -310,6 +310,7 @@
     render();
   });
   document.getElementById('dtype').addEventListener('change',render);
+  comSel.addEventListener('change',render);
 
   fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;FEES=c.fees||{};document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{});
 
@@ -349,7 +350,11 @@
       fh.textContent=f.home==null?'غير متوفر':f.home+' دج';
       fd.textContent=f.desk==null?'غير متوفر':f.desk+' دج';
     }
-    const deskOff=!!(f&&f.desk==null&&f.home!=null);
+    // desk only where Osen has an office: desk price set, and (if a list is set) the chosen commune is in it
+    const list=(f&&f.desk_communes)||[];
+    const deskOff=!!(f&&(f.home!=null||f.desk!=null)&&(f.desk==null||(list.length&&comSel.value&&!list.includes(comSel.value))));
+    if(f&&f.desk!=null&&list.length&&!comSel.value) fd.textContent=f.desk+' دج — اختر البلدية';
+    else if(f&&f.desk!=null&&deskOff) fd.textContent='لا يوجد مكتب في هذه البلدية';
     desk.disabled=deskOff; document.getElementById('dtDesk').classList.toggle('off',deskOff);
     if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
     const fee=currentFee();
