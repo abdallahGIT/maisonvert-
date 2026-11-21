@@ -59,7 +59,8 @@ module.exports = async (req, res) => {
   const tgTask = (async () => {
     const db = await Promise.race([dbTask.then((v) => v, () => null), new Promise((r) => setTimeout(() => r(undefined), 3000))]);
     if (db && db.duplicate) return { ok: true, skipped: true };
-    return telegram.notify(telegram.orderMessage({ ...order, id: db && db.id }, db !== null));
+    const id = db && db.id;
+    return telegram.notify(telegram.orderMessage({ ...order, id }, db !== null), id ? telegram.orderKeyboard(id) : undefined);
   })();
 
   const [dbRes, tgRes] = await Promise.allSettled([dbTask, tgTask]);

@@ -191,8 +191,10 @@ module.exports = async (req, res) => {
         return res.end(csv);
       }
 
-      case 'telegram_chats':
-        return send(res, 200, await telegram.findChats());
+      case 'telegram_chats': {
+        const seen = await query(`SELECT value FROM settings WHERE key = 'tg_chats'`).catch(() => ({ rows: [] }));
+        return send(res, 200, await telegram.findChats(seen.rows[0] ? seen.rows[0].value : []));
+      }
 
       case 'telegram_test':
         return send(res, 200, await telegram.notify('✅ اختبار: إشعارات الطلبات تعمل'));

@@ -20,5 +20,8 @@ module.exports = async (req, res) => {
     out.database_error = String(e.message || e).replace(/postgres(ql)?:\/\/[^\s]+/g, '[url]');
   }
   out.telegram = await telegram.check().catch((e) => ({ error: String(e.message || e) }));
+  if (out.telegram && out.telegram.token_ok) {
+    out.telegram.buttons_webhook = await require('./telegram').ensureWebhook(req).catch((e) => ({ ok: false, error: e.message }));
+  }
   send(res, 200, out);
 };
