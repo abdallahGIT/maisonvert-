@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Coeur de boeuf tomato seeds landing + COD orders + admin",
   "scripts": {
-    "dev": "node dev-server.js"
+    "dev": "node dev-server.js",
+    "test": "node --test test/*.test.js",
+    "check": "node -e \"for(const f of require('fs').readdirSync('api'))require('./api/'+f);require('./lib/osen')\""
   },
   "dependencies": {
     "pg": "^8.23.1"
