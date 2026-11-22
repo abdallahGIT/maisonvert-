@@ -209,7 +209,8 @@ module.exports = async (req, res) => {
         const r = await osen.importPricing();
         const fees = await saveDeliveryFees(r.fees);
         const n = Object.values(fees).filter((f) => f.home != null || f.desk != null).length;
-        return send(res, 200, { ok: true, wilayas: n, rows: r.rows, source: r.source });
+        if (r.return_fee) await saveSettings({ return_cost: r.return_fee }).catch(() => {});
+        return send(res, 200, { ok: true, wilayas: n, rows: r.rows, return_fee: r.return_fee });
       }
       case 'save_osen_settings':
         return send(res, 200, { ok: true, ids: await osen.saveIds(b) });
