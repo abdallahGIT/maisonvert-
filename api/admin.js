@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
           query(`SELECT count(*) FILTER (WHERE courier_status = 'queued' AND status <> 'cancelled')::int AS queued,
                         count(*) FILTER (WHERE (courier_status IS NULL OR courier_status = 'error') AND status = 'confirmed')::int AS confirmed_not_sent FROM orders`),
         ]);
-        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])), osen: { ...osenCounts.rows[0], api: osen.apiConfigured() } });
+        return send(res, 200, { ok: true, orders: rows.rows, counts: Object.fromEntries(counts.rows.map((r) => [r.status, r.n])), osen: { ...osenCounts.rows[0], api: await osen.apiConfigured() } });
       }
 
       case 'update_order': {
