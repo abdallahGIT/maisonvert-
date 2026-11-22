@@ -3,8 +3,26 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "cleanUrls": true,
-  "functions": { "api/*.js": { "maxDuration": 15 } },
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 15
+    }
+  },
   "headers": [
-    { "source": "/admin", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-osen-sync",
+      "schedule": "0 8 * * *"
+    }
   ]
 }

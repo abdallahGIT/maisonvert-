@@ -203,6 +203,8 @@ module.exports = async (req, res) => {
       // ---- Osen Logistics ----
       case 'osen_settings':
         return send(res, 200, { ok: true, ids: await osen.getIds(), check: await osen.check().catch((e) => ({ error: e.message })) });
+      case 'osen_sync':
+        return send(res, 200, { ok: true, ...(await osen.syncTracking()) });
       case 'osen_test':
         return send(res, 200, { ok: true, ...(await osen.testConnection()) });
       case 'osen_import_prices': {

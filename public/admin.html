@@ -109,6 +109,7 @@
       <div class="bd row" id="osenBar" style="background:#f3f8ff;border-bottom:1px solid #e3ecf7;gap:8px">
         <b>📤 Osen:</b>
         <button class="btn light" id="osenAll" onclick="osenQueueAll()">إضافة كل المؤكدة</button>
+        <button class="btn light" id="osenSync" onclick="osenSync()">🔄 مزامنة حالات Osen</button>
         <button class="btn" id="osenDl" onclick="osenExport()">تحميل ملف Osen</button>
         <span class="muted" style="font-size:12px" id="osenMode"></span>
       </div>
@@ -339,7 +340,8 @@ function osenCell(o){
   if(!o.courier_status) return `<button class="btn light osBtn" data-os="${o.id}" style="padding:3px 8px">📤 Osen</button>`;
   if(o.courier_status==='error') return `<span class="pill" style="background:#fde8e8;color:#a61b1b" title="${esc(o.courier_error)}">فشل</span> <button class="btn light osBtn" data-os="${o.id}" style="padding:1px 6px">↻</button><div class="muted" style="font-size:11px;max-width:160px">${esc(o.courier_error)}</div>`;
   if(o.courier_status==='queued') return `<span class="pill" style="background:#fff4d6;color:#8a5a00">في القائمة</span> <button class="btn light" data-unq="${o.id}" title="إزالة" style="padding:1px 6px">✕</button>`;
-  return `<span class="pill" style="background:#e4f1ff;color:#0b4f8a">${o.courier_status==='sent'?'تم الإرسال':'تم التصدير'}</span>`+
+  const live=o.courier_state_label?`<div style="font-size:12px;margin-top:3px">🚚 ${esc(o.courier_state_label)}<div class="muted" style="font-size:11px">${o.courier_state_at?new Date(o.courier_state_at).toLocaleString('fr-DZ',{timeZone:'Africa/Algiers',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}</div></div>`:'';
+  return `<span class="pill" style="background:#e4f1ff;color:#0b4f8a">${o.courier_status==='sent'?'تم الإرسال':'تم التصدير'}</span>`+live+
     `<div><input class="in trkIn" data-trk="${o.id}" placeholder="رقم التتبع" value="${esc(o.courier_ref)}" style="width:110px;padding:2px 6px;font-size:12px;margin-top:3px"></div>`;
 }
 $('#ordersTbl').addEventListener('click',async e=>{
@@ -349,6 +351,8 @@ $('#ordersTbl').addEventListener('click',async e=>{
 });
 $('#ordersTbl').addEventListener('change',async e=>{const t=e.target.dataset.trk;if(!t)return;e.stopImmediatePropagation();
   const d=await api('osen_mark',{body:{id:+t,courier_ref:e.target.value}});if(d.ok){toast('تم حفظ رقم التتبع');loadOrders()}},true);
+async function osenSync(){const b=$('#osenSync');b.disabled=true;const d=await api('osen_sync');b.disabled=false;
+  if(d.ok!==undefined)toast(d.error?d.error:`تمت المزامنة: ${d.checked} طرد، ${d.updated} تغيّر`+(d.errors&&d.errors.length?' — '+d.errors[0]:''));loadOrders();loadSummary()}
 async function osenQueueAll(){const d=await api('osen_queue',{body:{all_confirmed:true}});if(d.ok){toast(d.api?d.message:d.queued+' طلب أضيف إلى قائمة Osen');loadOrders()}}
 async function osenExport(){
   const r=await fetch('/api/admin?action=osen_export',{headers:{'x-admin-key':KEY}});if(!r.ok){toast('خطأ في التصدير');return}
