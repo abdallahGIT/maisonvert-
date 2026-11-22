@@ -36,6 +36,7 @@ global.fetch = async (url, opts = {}) => {
       return { ok: true, status: 200, json: async () => body.trackings.map((t) => ({ tracking: t, is_return: false,
         last_status: { code: t === 'T-DEL' ? 'DELIVERED' : 'OUT_FOR_DELIVERY', label: t === 'T-DEL' ? 'Livré' : 'En cours de livraison', date: '2026-11-22T09:00:00Z' } })) };
     }
+    if (opts.headers && opts.headers['x-api-token'] === 'rejected-token') return { ok: false, status: 401, json: async () => ({ message: 'Invalid or expired token' }) };
     return { ok: true, status: 200, json: async () => [{ index: 0, success: true, tracking: 'OS-TEST-1' }] };
   }
   return { ok: false, status: 404, json: async () => ({}) };
@@ -92,4 +93,12 @@ test('sync reads statuses with the object form and saves raw + mapped status', a
   const c = calls.find((x) => x.url.endsWith('/v2/ecomanager/orders'));
   assert.deepEqual(JSON.parse(c.opts.body), { trackings: ['T-OFD', 'T-DEL'] });
   assert.deepEqual(store.updates.map((u) => [u[0], u[1], u[4]]), [[1, 'OUT_FOR_DELIVERY', 'shipped'], [2, 'DELIVERED', 'delivered']]);
+});
+
+test('a rejected token points to the admin Osen tab, not a Vercel variable', async () => {
+  await osen.saveIds({ merchant_id: 'm-1', store_id: 's-1', api_token: 'rejected-token' });
+  await assert.rejects(
+    osen.createParcel({ id: 8, name: 'Ali', phone: '0551234567', wilaya_code: '16', commune: 'ابن عكنون', delivery_type: 'home', total: 1900 }),
+    (e) => /تبويب Osen/.test(e.message) && !/OSEN_API_KEY/.test(e.message) && !e.message.includes('rejected-token')
+  );
 });
