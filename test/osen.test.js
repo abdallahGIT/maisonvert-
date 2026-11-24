@@ -27,6 +27,9 @@ const osen = require('../lib/osen');
 const calls = [];
 global.fetch = async (url, opts = {}) => {
   calls.push({ url, opts });
+  if (url.endsWith('/geo/stopdesks')) {
+    return { ok: true, status: 200, json: async () => [{ id: 'd-16b', name: 'Bureau Alger 16B', code: 'BR-16-B', municipality: { id: 562 } }] };
+  }
   if (url.endsWith('/geo/provinces')) {
     return { ok: true, status: 200, json: async () => [{ id: 16, code: '16', municipalities: [{ id: 562, name_arabic: 'ابن عكنون', servingStopdesk: { name: 'Bureau Alger 16B' } }] }] };
   }

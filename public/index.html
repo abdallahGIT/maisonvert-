@@ -105,6 +105,9 @@
   .dtype input{position:absolute;opacity:0;pointer-events:none}
   .dtype label:has(input:checked){border-color:var(--green);background:#eaf7ee;box-shadow:0 0 0 2px rgba(15,107,47,.15)}
   .dtype label.off{opacity:.45;cursor:not-allowed}
+  .dtype.one{grid-template-columns:1fr}
+  [hidden]{display:none!important}
+  .nodesk{margin:6px 0 0;font-size:13px;font-weight:700;color:var(--green)}
   .dtype small{font-weight:600;color:var(--muted);font-size:13px}
   .thanks{display:none;text-align:center;padding:20px 6px}
   .thanks .ok{font-size:54px}
@@ -223,6 +226,7 @@
           <label id="dtHome"><input type="radio" name="delivery_type" value="home" checked>🏠 إلى المنزل<small id="feeHome">اختر الولاية</small></label>
           <label id="dtDesk"><input type="radio" name="delivery_type" value="desk">🏢 إلى المكتب<small id="feeDesk">اختر الولاية</small></label>
         </div>
+        <p class="nodesk" id="noDesk" hidden>لا يوجد مكتب توصيل في بلديتك، سيصلك الطلب إلى المنزل 🏠</p>
 
         <label for="reference">المرجع (أقرب معلم)</label>
         <input id="reference" name="reference" placeholder="مثال: قرب مسجد النور، الحي الجديد">
@@ -384,6 +388,10 @@
     else if(f&&f.desk!=null&&deskOff) fd.textContent='لا يوجد مكتب في هذه البلدية';
     else if(f&&f.desk!=null&&od&&od[comSel.value]) fd.textContent=f.desk+' دج — '+od[comSel.value];
     desk.disabled=deskOff; document.getElementById('dtDesk').classList.toggle('off',deskOff);
+    // no office in the chosen commune: the office option disappears and a short note says why
+    const hideDesk=!!(deskOff&&comSel.value);
+    document.getElementById('dtDesk').hidden=hideDesk; document.getElementById('dtype').classList.toggle('one',hideDesk);
+    document.getElementById('noDesk').hidden=!hideDesk;
     if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
     const fee=currentFee();
     const packs=OFFERS[qty];
