@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>بذور طماطم قلب الثور | ازرعها بنفسك</title>
 <meta name="description" content="بذور طماطم قلب الثور 2 غرام (200-300 بذرة) مع هدية بذور بطيخ الكناري. الدفع عند الاستلام والتوصيل لـ 58 ولاية.">
+<link rel="preload" as="image" type="image/avif" imagesrcset="images/hero-v2-480.avif 480w, images/hero-v2-720.avif 720w, images/hero-v2-1000.avif 1000w" imagesizes="(min-width:520px) 400px, calc(100vw - 42px)" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"></noscript>
 <style>
   :root{
     --green:#0f6b2f; --green-d:#0a5223; --lime:#b8ef3a; --yellow:#ffe04a;
@@ -53,7 +56,8 @@
   .gal-main{position:relative;border-radius:var(--radius);overflow:hidden;border:3px solid #fff;box-shadow:0 8px 24px rgba(15,107,47,.18);background:#fff}
   .slides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
   .slides::-webkit-scrollbar{display:none}
-  .slides img{flex:0 0 100%;width:100%;aspect-ratio:1199/1312;object-fit:cover;scroll-snap-align:center}
+  .slides picture{flex:0 0 100%;display:block}
+  .slides img{flex:0 0 100%;background:#e8f0e3;width:100%;aspect-ratio:1199/1312;object-fit:cover;scroll-snap-align:center}
   .nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--green);font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
   .nav{direction:ltr} .nav.prev{right:8px} .nav.next{left:8px}
   @media (max-width:519px),(hover:none){.nav{display:none}}
@@ -151,22 +155,22 @@
     <div class="gal">
       <div class="gal-main">
         <div class="slides" id="slides">
-          <img src="images/hero.webp" alt="بذور طماطم قلب الثور مع هدية بذور بطيخ الكناري" width="1199" height="1312">
-          <img src="images/tomato3.webp" alt="ثمار طماطم قلب الثور الكبيرة" width="1000" height="750" loading="lazy">
-          <img src="images/tomato1.webp" alt="طماطم قلب الثور مقطعة" width="1000" height="750" loading="lazy">
-          <img src="images/tomato2.webp" alt="شتلة طماطم قلب الثور في أصيص" width="1000" height="750" loading="lazy">
-          <img src="images/melon.webp" alt="هدية: بذور بطيخ الكناري" width="1000" height="750" loading="lazy">
+          <picture><source type="image/avif" srcset="images/hero-v2-480.avif 480w, images/hero-v2-720.avif 720w, images/hero-v2-1000.avif 1000w" sizes="(min-width:520px) 400px, calc(100vw - 42px)"><img src="images/hero-v2-720.webp" srcset="images/hero-v2-480.webp 480w, images/hero-v2-720.webp 720w, images/hero-v2-1000.webp 1000w" sizes="(min-width:520px) 400px, calc(100vw - 42px)" alt="بذور طماطم قلب الثور مع هدية بذور بطيخ الكناري" width="1199" height="1312" fetchpriority="high"></picture>
+          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="images/tomato3.webp" alt="ثمار طماطم قلب الثور الكبيرة" width="1000" height="750">
+          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="images/tomato1.webp" alt="طماطم قلب الثور مقطعة" width="1000" height="750">
+          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="images/tomato2.webp" alt="شتلة طماطم قلب الثور في أصيص" width="1000" height="750">
+          <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="images/melon.webp" alt="هدية: بذور بطيخ الكناري" width="1000" height="750">
         </div>
         <button type="button" class="nav prev" id="prev" aria-label="السابق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
         <button type="button" class="nav next" id="next" aria-label="التالي"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
         <span class="count" id="count">1 / 5</span>
       </div>
       <div class="thumbs" id="thumbs">
-        <button type="button" aria-label="صورة 1"><img src="images/hero.webp" alt=""></button>
-        <button type="button" aria-label="صورة 2"><img src="images/tomato3.webp" alt=""></button>
-        <button type="button" aria-label="صورة 3"><img src="images/tomato1.webp" alt=""></button>
-        <button type="button" aria-label="صورة 4"><img src="images/tomato2.webp" alt=""></button>
-        <button type="button" aria-label="صورة 5"><img src="images/melon.webp" alt=""></button>
+        <button type="button" aria-label="صورة 1"><img src="images/th-hero.webp" alt="" width="62" height="62"></button>
+        <button type="button" aria-label="صورة 2"><img src="images/th-tomato3.webp" alt="" width="62" height="62"></button>
+        <button type="button" aria-label="صورة 3"><img src="images/th-tomato1.webp" alt="" width="62" height="62"></button>
+        <button type="button" aria-label="صورة 4"><img src="images/th-tomato2.webp" alt="" width="62" height="62"></button>
+        <button type="button" aria-label="صورة 5"><img src="images/th-melon.webp" alt="" width="62" height="62"></button>
       </div>
     </div>
     <div>
@@ -259,9 +263,9 @@
   <section class="how">
     <h2>كيف تزرعها؟</h2>
     <div class="steps">
-      <div class="step"><img src="images/step1.gif" alt="إنبات بذور الطماطم على منديل ورقي مبلل" loading="lazy"><div><span class="num">1</span><h3>أنبِت البذور</h3><p>ضع البذور على منديل ورقي مبلل في صحن، ورُشّها بالماء يومياً حتى تنبت (3-7 أيام).</p></div></div>
-      <div class="step"><img src="images/step2.gif" alt="نقل البذور المنبتة إلى أصيص صغير" loading="lazy"><div><span class="num">2</span><h3>انقلها إلى أصيص</h3><p>انقل البذور المنبتة بلطف إلى أصيص صغير فيه تربة خصبة، وغطِّها واسقها.</p></div></div>
-      <div class="step"><img src="images/step3.gif" alt="غرس شتلة الطماطم في الحديقة" loading="lazy"><div><span class="num">3</span><h3>اغرسها في الحديقة</h3><p>عندما تكبر الشتلة، اغرسها في الحديقة أو أصيص كبير في مكان مشمس واسقها بانتظام.</p></div></div>
+      <div class="step"><img src="images/step1.webp" width="240" height="240" alt="إنبات بذور الطماطم على منديل ورقي مبلل" loading="lazy"><div><span class="num">1</span><h3>أنبِت البذور</h3><p>ضع البذور على منديل ورقي مبلل في صحن، ورُشّها بالماء يومياً حتى تنبت (3-7 أيام).</p></div></div>
+      <div class="step"><img src="images/step2.webp" width="240" height="361" alt="نقل البذور المنبتة إلى أصيص صغير" loading="lazy"><div><span class="num">2</span><h3>انقلها إلى أصيص</h3><p>انقل البذور المنبتة بلطف إلى أصيص صغير فيه تربة خصبة، وغطِّها واسقها.</p></div></div>
+      <div class="step"><img src="images/step3.webp" width="240" height="361" alt="غرس شتلة الطماطم في الحديقة" loading="lazy"><div><span class="num">3</span><h3>اغرسها في الحديقة</h3><p>عندما تكبر الشتلة، اغرسها في الحديقة أو أصيص كبير في مكان مشمس واسقها بانتظام.</p></div></div>
     </div>
   </section>
 
@@ -379,6 +383,13 @@
   document.getElementById('next').onclick=()=>go(cur+1);
   let st;slides.addEventListener('scroll',()=>{clearTimeout(st);st=setTimeout(()=>{const i=Math.round(Math.abs(slides.scrollLeft)/slides.clientWidth);if(i!==cur){cur=i;mark()}},80)},{passive:true});
   mark();
+  // Other slides load after the page (so the first image gets all the bandwidth), or at once when the visitor touches the gallery
+  let more=false;
+  function loadMore(){if(more)return;more=true;slides.querySelectorAll('img[data-src]').forEach(im=>{im.src=im.dataset.src;im.removeAttribute('data-src')})}
+  addEventListener('load',()=>setTimeout(loadMore,300));
+  ['pointerdown','touchstart','scroll'].forEach(ev=>slides.addEventListener(ev,loadMore,{once:true,passive:true}));
+  document.getElementById('thumbs').addEventListener('pointerdown',loadMore,{once:true});
+  ['prev','next'].forEach(id=>document.getElementById(id).addEventListener('pointerdown',loadMore,{once:true}));
 
   // Hide sticky bar while the form is on screen
   const sticky=document.getElementById('sticky');
