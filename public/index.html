@@ -312,6 +312,8 @@
   } // total price per offer (from the admin price sheet)
   let FEES = {};
   let UNSERVED = {};      // communes Osen does not deliver to (hidden)
+  // hide a wilaya when Osen delivers to none of its communes
+  function pruneWilayas(){const s=document.getElementById('wilaya');[...s.options].forEach(o=>{const w=COMMUNES[o.value];if(o.value&&w&&w.communes.every(c=>(UNSERVED[o.value]||[]).includes(c))){if(s.value===o.value){s.value='';s.dispatchEvent(new Event('change'))}o.remove()}})}
   let DESKS = null;        // Osen stop desks per commune           // delivery fees per wilaya, from the admin page
 
   // Visitor session id (links the lead to the order)
@@ -326,6 +328,7 @@
   afterLoad(()=>fetch('/communes.json').then(r=>r.json()).then(d=>{
     COMMUNES=d;
     Object.entries(d).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([code,w])=>{const o=document.createElement('option');o.value=code;o.textContent=code+' - '+w.name;sel.appendChild(o)});
+    pruneWilayas();
   }));
   sel.addEventListener('change',()=>{
     const w=COMMUNES[sel.value];
@@ -337,7 +340,7 @@
   document.getElementById('dtype').addEventListener('change',render);
   comSel.addEventListener('change',render);
 
-  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;UNSERVED=c.unserved||{};document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}if(c&&c.pixel)startPixel(c.pixel)}).catch(()=>{}));
+  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;UNSERVED=c.unserved||{};pruneWilayas();document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}if(c&&c.pixel)startPixel(c.pixel)}).catch(()=>{}));
 
   document.getElementById('order').addEventListener('focusin',()=>track('InitiateCheckout',{content_ids:['tomato-coeur-de-boeuf'],content_type:'product',value:OFFERS[qty],currency:'DZD',num_items:qty}),{once:true});
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
