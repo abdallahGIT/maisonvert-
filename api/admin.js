@@ -170,6 +170,25 @@ module.exports = async (req, res) => {
       case 'save_delivery_fees':
         return send(res, 200, { ok: true, fees: await saveDeliveryFees(b.fees) });
 
+      case 'reset_preview': { // what "clear test data" would delete
+        const r = await query(`SELECT
+          (SELECT count(*) FROM orders)::int AS orders, (SELECT min(created_at) FROM orders) AS orders_from, (SELECT max(created_at) FROM orders) AS orders_to,
+          (SELECT count(*) FROM leads)::int AS leads, (SELECT count(*) FROM weekly_ads)::int AS weeks`);
+        return send(res, 200, { ok: true, counts: r.rows[0] });
+      }
+
+      case 'reset_data': { // before launch: back up, then empty orders, leads and weekly ad spend. Settings are kept.
+        if (req.method !== 'POST' || b.confirm !== 'DELETE') return send(res, 400, { ok: false, error: 'confirm' });
+        const [o, l, w] = await Promise.all([
+          query('SELECT * FROM orders ORDER BY id'), query('SELECT * FROM leads ORDER BY id'), query('SELECT * FROM weekly_ads'),
+        ]);
+        const backup = { created_at: new Date().toISOString(), orders: o.rows, leads: l.rows, weekly_ads: w.rows };
+        // a copy stays in the database (settings 'backup_before_launch') in case the download is lost
+        await query(`INSERT INTO settings (key, value) VALUES ('backup_before_launch', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`, [JSON.stringify(backup)]);
+        await query('TRUNCATE orders, leads, weekly_ads RESTART IDENTITY');
+        return send(res, 200, { ok: true, deleted: { orders: o.rows.length, leads: l.rows.length, weeks: w.rows.length }, backup });
+      }
+
       case 'tracking_settings':
         return send(res, 200, { ok: true, tracking: await getTracking() });
 

@@ -176,6 +176,12 @@
         <div class="muted" style="margin-top:8px;font-size:13px">تجده في Meta Events Manager ← مصادر البيانات ← اسم البكسل. الأحداث المرسلة: PageView، ViewContent، InitiateCheckout، Lead، Purchase (بالمبلغ الحقيقي بالدينار). اتركه فارغًا لإيقاف البكسل.</div>
       </div>
     </div>
+    <div class="card" style="border:2px solid #f3c2c2"><div class="hd"><span>⚠️ قبل الإطلاق: مسح بيانات التجربة</span></div>
+      <div class="bd">
+        <div class="muted" style="font-size:13px">يحذف كل الطلبات والزبائن المحتملين (Leads) ومصاريف الإعلانات الأسبوعية، ويبدأ ترقيم الطلبات من #1. تبقى كل الإعدادات: الأسعار، أسعار التوصيل، Osen، تيليغرام، البكسل. تُحمَّل نسخة احتياطية تلقائيًا قبل الحذف.</div>
+        <div class="row" style="margin-top:10px"><button class="btn light" onclick="resetData()">مسح بيانات التجربة</button><span class="muted" id="resetState"></span></div>
+      </div>
+    </div>
   </div>
 
   <!-- DELIVERY FEES -->
@@ -412,6 +418,14 @@ async function saveFees(){const fees={};document.querySelectorAll('.feeIn').forE
 // ---------- Osen ----------
 function osenStatus(c){if(!c)return'';return (c.communes_ok?'✅ الاتصال بـ Osen يعمل ('+c.communes_ok+' ولاية، مكاتب Stop desk تُقرأ تلقائياً)':'❌ تعذر الاتصال بـ Osen')+'<br>'+
   (c.key_ok?'✅ إرسال الطلبات إلى Osen مفعّل':'📤 الطلبات تُجمع في ملف Osen (تبويب الطلبات) إلى أن يفعّل Osen الإرسال المباشر لحسابك')}
+async function resetData(){
+  const p=await api('reset_preview');if(!p.ok)return;const c=p.counts;
+  const msg='سيتم حذف: '+c.orders+' طلب، '+c.leads+' Lead، '+c.weeks+' أسبوع من مصاريف الإعلانات.\n'+(c.orders?('الطلبات من '+String(c.orders_from).slice(0,10)+' إلى '+String(c.orders_to).slice(0,10)+'.\n'):'')+'تبقى الإعدادات. ستُحمَّل نسخة احتياطية.\n\nاكتب DELETE للتأكيد:';
+  if(prompt(msg)!=='DELETE'){$('#resetState').textContent='تم الإلغاء';return}
+  const d=await api('reset_data',{body:{confirm:'DELETE'}});if(!d.ok){$('#resetState').textContent='❌ لم يتم الحذف';return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d.backup,null,1)],{type:'application/json'}));a.download='backup-before-launch-'+d.backup.created_at.slice(0,10)+'.json';a.click();
+  $('#resetState').textContent='✅ تم حذف '+d.deleted.orders+' طلب و'+d.deleted.leads+' Lead و'+d.deleted.weeks+' أسبوع. النسخة الاحتياطية حُمّلت.';toast('تم المسح');loadSummary&&loadSummary();
+}
 async function loadPixel(){const d=await api('tracking_settings');if(!d.ok)return;$('#pixelId').value=d.tracking.meta_pixel_id||'';$('#pixelState').textContent=d.tracking.meta_pixel_id?'✅ البكسل مفعّل':'غير مفعّل'}
 async function savePixel(){const d=await api('save_tracking',{body:{meta_pixel_id:$('#pixelId').value}});if(d.ok){$('#pixelId').value=d.tracking.meta_pixel_id;$('#pixelState').textContent=d.tracking.meta_pixel_id?'✅ البكسل مفعّل (يظهر في الموقع خلال دقيقة)':'غير مفعّل';toast('تم الحفظ')}}
 async function loadOsen(){const d=await api('osen_settings');if(!d.ok)return;$('#osMerchant').value=d.ids.merchant_id;$('#osStore').value=d.ids.store_id;$('#osToken').value='';
