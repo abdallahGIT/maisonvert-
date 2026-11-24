@@ -220,10 +220,12 @@
         <label for="commune">البلدية</label>
         <select id="commune" name="commune" required disabled><option value="">اختر الولاية أولاً</option></select>
 
+        <div id="dtWrap" hidden>
         <label>طريقة التوصيل</label>
         <div class="dtype" id="dtype">
           <label id="dtHome"><input type="radio" name="delivery_type" value="home" checked>🏠 إلى المنزل<small id="feeHome">اختر الولاية</small></label>
           <label id="dtDesk"><input type="radio" name="delivery_type" value="desk">🏢 إلى المكتب<small id="feeDesk">اختر الولاية</small></label>
+        </div>
         </div>
 
         <label for="reference">المرجع (أقرب معلم)</label>
@@ -393,6 +395,8 @@
     // no office in the chosen commune: the office option disappears
     const hideDesk=!!(deskOff&&comSel.value);
     document.getElementById('dtDesk').hidden=hideDesk; document.getElementById('dtype').classList.toggle('one',hideDesk);
+    // the delivery choice appears only once a baladia with an Osen office is picked; otherwise home delivery is used
+    document.getElementById('dtWrap').hidden=!(comSel.value&&!deskOff);
     if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
     const fee=currentFee();
     const packs=OFFERS[qty];
