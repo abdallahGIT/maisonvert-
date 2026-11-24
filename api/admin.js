@@ -164,8 +164,18 @@ module.exports = async (req, res) => {
         return send(res, 200, { ok: true, lead: r.rows[0] });
       }
 
-      case 'delivery_fees':
-        return send(res, 200, { ok: true, fees: await getDeliveryFees() });
+      case 'delivery_fees': {
+        const imp = await query(`SELECT value FROM settings WHERE key = 'osen_communes'`).catch(() => ({ rows: [] }));
+        return send(res, 200, { ok: true, fees: await getDeliveryFees(), osen_communes: imp.rows[0] ? imp.rows[0].value : null });
+      }
+
+      case 'osen_import_communes': { // pull baladias + offices from Osen now (no cache) and keep a copy
+        const report = await osen.communesReport(require('../lib/communes.json'), { fresh: true });
+        const value = { at: new Date().toISOString(), report };
+        await query(`INSERT INTO settings (key, value) VALUES ('osen_communes', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`, [JSON.stringify(value)]);
+        const sum = Object.values(report).reduce((a, r) => ({ served: a.served + r.served, total: a.total + r.total, offices: a.offices + Object.keys(r.offices).length }), { served: 0, total: 0, offices: 0 });
+        return send(res, 200, { ok: true, osen_communes: value, ...sum });
+      }
 
       case 'save_delivery_fees':
         return send(res, 200, { ok: true, fees: await saveDeliveryFees(b.fees) });

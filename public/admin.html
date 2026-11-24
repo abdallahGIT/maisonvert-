@@ -186,7 +186,7 @@
 
   <!-- DELIVERY FEES -->
   <div class="tab" id="t-fees">
-    <div class="card"><div class="hd"><span>أسعار التوصيل حسب الولاية (يراها الزبون في صفحة الطلب)</span><button class="btn" onclick="saveFees()">حفظ أسعار التوصيل</button></div>
+    <div class="card"><div class="hd"><span>أسعار التوصيل حسب الولاية (يراها الزبون في صفحة الطلب)</span><button class="btn light" id="impCom" onclick="importCommunes()">⬇️ استيراد البلديات والمكاتب من Osen</button> <button class="btn" onclick="saveFees()">حفظ أسعار التوصيل</button></div>
       <div class="bd">
         <div class="row" style="margin-bottom:12px">
           <span class="muted">تطبيق نفس السعر على كل الولايات:</span>
@@ -195,6 +195,7 @@
           <button class="btn light" onclick="applyAll()">تطبيق</button>
           <span class="muted" style="font-size:12px">اترك الخانة فارغة = غير متوفر (المكتب) / يحدد عند التأكيد (المنزل)</span>
         </div>
+        <div id="impInfo" class="muted" style="font-size:13px;margin-bottom:8px"></div>
         <div class="scroll"><table class="tbl" id="feesTbl"></table></div>
       </div>
     </div>
@@ -392,24 +393,32 @@ $('#leadSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;leadSt
 $('#leadsTbl').addEventListener('change',async e=>{const id=e.target.dataset.id;if(!id)return;const d=await api('update_lead',{body:{id,status:e.target.value}});if(d.ok)toast('تم التحديث')});
 
 // ---------- Delivery fees ----------
-let WILAYAS=null;const DESK={};
+let WILAYAS=null;const DESK={};let OSC=null; // OSC = last import of baladias/offices from Osen
 function deskLabel(c){const n=DESK[c]?DESK[c].size:0;return n?'🏢 '+n+' بلدية':'🏢 كل البلديات'}
 $('#feesTbl').addEventListener('click',e=>{const b=e.target.closest('.dcBtn');if(!b)return;const r=$('#dc-'+b.dataset.dc);r.hidden=!r.hidden});
 $('#feesTbl').addEventListener('change',e=>{if(!e.target.classList.contains('dcChk'))return;const c=e.target.dataset.c;
   e.target.checked?DESK[c].add(e.target.value):DESK[c].delete(e.target.value);document.querySelector(`[data-dc="${c}"]`).textContent=deskLabel(c)});
 async function loadFees(){
   if(!WILAYAS) WILAYAS=await (await fetch('/communes.json')).json();
-  const d=await api('delivery_fees'); if(!d.ok) return;
-  $('#feesTbl').innerHTML=`<tr><th>الولاية</th><th>البلديات</th><th>🏠 المنزل (دج)</th><th>🏢 المكتب Stop desk (دج)</th><th>بلديات فيها مكتب</th></tr>`+
+  const d=await api('delivery_fees'); if(!d.ok) return; OSC=d.osen_communes; showImp();
+  $('#feesTbl').innerHTML=`<tr><th>الولاية</th><th>البلديات</th><th>🏠 المنزل (دج)</th><th>🏢 المكتب Stop desk (دج)</th><th>بلديات فيها مكتب</th><th>Osen</th></tr>`+
     Object.entries(WILAYAS).sort((a,b)=>a[0].localeCompare(b[0])).map(([c,w])=>{const f=d.fees[c]||{};DESK[c]=new Set(f.desk_communes||[]);return `<tr><td>${c} - ${esc(w.name)}</td><td class="muted">${w.communes.length}</td>
       <td><input class="in feeIn" data-c="${c}" data-t="home" type="number" min="0" value="${f.home??''}" style="width:110px;padding:4px 8px"></td>
       <td><input class="in feeIn" data-c="${c}" data-t="desk" type="number" min="0" value="${f.desk??''}" style="width:110px;padding:4px 8px"></td>
-      <td><button class="btn light dcBtn" data-dc="${c}" style="padding:3px 10px">${deskLabel(c)}</button></td></tr>
-      <tr class="dcRow" id="dc-${c}" hidden><td colspan="5" style="background:#fafaf7">
-        <div class="muted" style="margin-bottom:6px">اختر البلديات التي فيها مكتب Osen في ${esc(w.name)}. إذا لم تختر أي بلدية = المكتب متوفر في كل البلديات (إذا كان سعر المكتب موجود).</div>
+      <td><button class="btn light dcBtn" data-dc="${c}" style="padding:3px 10px">${deskLabel(c)}</button></td><td class="muted oscCell" id="osc-${c}" style="font-size:12px">${oscCell(c)}</td></tr>
+      <tr class="dcRow" id="dc-${c}" hidden><td colspan="6" style="background:#fafaf7">
+        <div class="muted" style="margin-bottom:6px">البلديات التي فيها مكتب Osen في ${esc(w.name)} (يملؤها زر الاستيراد). التوصيل للمكتب يظهر للزبون فقط في هذه البلديات. إذا لم تختر أي بلدية = تُستعمل مكاتب Osen تلقائياً.</div>
         <div style="display:flex;flex-wrap:wrap;gap:4px 14px">${w.communes.map(m=>`<label style="font-size:13px;white-space:nowrap"><input type="checkbox" class="dcChk" data-c="${c}" value="${esc(m)}"${DESK[c].has(m)?' checked':''}> ${esc(m)}</label>`).join('')}</div>
       </td></tr>`}).join('');
 }
+function oscCell(c){const r=OSC&&OSC.report&&OSC.report[c];if(!r)return '—';return `✅ ${r.served}/${r.total} بلدية · 🏢 ${Object.keys(r.offices).length} مكتب`+(r.unserved.length?`<div title="${esc(r.unserved.join('، '))}">⛔ لا توصيل: ${r.unserved.length}</div>`:'')}
+function showImp(){$('#impInfo').innerHTML=OSC?`آخر استيراد من Osen: ${new Date(OSC.at).toLocaleString('fr-DZ',{timeZone:'Africa/Algiers'})} — البلديات التي لا يوصل لها Osen مخفية في صفحة الطلب، والتوصيل للمكتب يظهر فقط في البلديات التي فيها مكتب.`:'اضغط «استيراد البلديات والمكاتب من Osen» لجلب البلديات التي يوصل لها Osen ومكاتبه.'}
+async function importCommunes(){const b=$('#impCom');b.disabled=true;b.textContent='جارٍ الاستيراد…';
+  try{const d=await api('osen_import_communes');if(!d.ok)return;OSC=d.osen_communes;
+    Object.entries(OSC.report).forEach(([c,r])=>{DESK[c]=new Set(Object.keys(r.offices));const btn=document.querySelector(`[data-dc="${c}"]`);if(btn)btn.textContent=deskLabel(c);
+      document.querySelectorAll('.dcChk[data-c="'+c+'"]').forEach(k=>k.checked=DESK[c].has(k.value));const cell=$('#osc-'+c);if(cell)cell.innerHTML=oscCell(c)});
+    showImp();toast(`تم: ${d.served}/${d.total} بلدية يوصل لها Osen · ${d.offices} مكتب. اضغط «حفظ أسعار التوصيل» لتثبيت المكاتب`)}
+  finally{b.disabled=false;b.textContent='⬇️ استيراد البلديات والمكاتب من Osen'}}
 function applyAll(){const h=$('#allHome').value,dk=$('#allDesk').value;document.querySelectorAll('.feeIn').forEach(i=>{if(i.dataset.t==='home'&&h!=='')i.value=h;if(i.dataset.t==='desk'&&dk!=='')i.value=dk})}
 async function saveFees(){const fees={};document.querySelectorAll('.feeIn').forEach(i=>{(fees[i.dataset.c]=fees[i.dataset.c]||{})[i.dataset.t]=i.value});
   Object.keys(fees).forEach(c=>fees[c].desk_communes=[...(DESK[c]||[])]);
