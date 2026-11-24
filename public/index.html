@@ -311,6 +311,7 @@
     PX.on=true;PX.q.splice(0).forEach(a=>track.apply(null,a));
   } // total price per offer (from the admin price sheet)
   let FEES = {};
+  let UNSERVED = {};      // communes Osen does not deliver to (hidden)
   let DESKS = null;        // Osen stop desks per commune           // delivery fees per wilaya, from the admin page
 
   // Visitor session id (links the lead to the order)
@@ -330,13 +331,13 @@
     const w=COMMUNES[sel.value];
     comSel.innerHTML='';
     const first=document.createElement('option');first.value='';first.textContent=w?'اختر البلدية':'اختر الولاية أولاً';comSel.appendChild(first);
-    if(w){w.communes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;comSel.appendChild(o)});comSel.disabled=false}else comSel.disabled=true;
+    if(w){const un=UNSERVED[sel.value]||[];w.communes.filter(c=>!un.includes(c)).forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;comSel.appendChild(o)});comSel.disabled=false}else comSel.disabled=true;
     render();
   });
   document.getElementById('dtype').addEventListener('change',render);
   comSel.addEventListener('change',render);
 
-  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}if(c&&c.pixel)startPixel(c.pixel)}).catch(()=>{}));
+  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;UNSERVED=c.unserved||{};document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}if(c&&c.pixel)startPixel(c.pixel)}).catch(()=>{}));
 
   document.getElementById('order').addEventListener('focusin',()=>track('InitiateCheckout',{content_ids:['tomato-coeur-de-boeuf'],content_type:'product',value:OFFERS[qty],currency:'DZD',num_items:qty}),{once:true});
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.

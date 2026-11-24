@@ -26,6 +26,10 @@ module.exports = async (req, res) => {
   if (name.length < 2) errors.name = 'الاسم مطلوب';
   if (!w) errors.wilaya = 'اختر الولاية';
   else if (!w.communes.includes(commune)) errors.commune = 'اختر البلدية';
+  if (!errors.wilaya && !errors.commune) { // only communes Osen delivers to (skipped if Osen is unreachable)
+    const un = await osen.unservedMap({ [code]: w }).catch(() => null);
+    if (un && (un[code] || []).includes(commune)) errors.commune = 'التوصيل غير متوفر لهذه البلدية';
+  }
   if (Object.keys(errors).length) return send(res, 400, { ok: false, errors });
 
   // Price comes from the admin price sheet, never from the browser.

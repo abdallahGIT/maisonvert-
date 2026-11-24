@@ -10,10 +10,12 @@ module.exports = async (req, res) => {
   let fees = {};
   let desks = null; // communes served by an Osen stop desk: {code: {commune: deskName}}
   let pixel = '';
-  const [a, b, t] = await Promise.allSettled([Promise.all([getSettings(), getDeliveryFees()]), osen.deskMap(COMMUNES), getTracking()]);
+  let unserved = {}; // communes Osen does not deliver to: hidden from the form
+  const [a, b, t, u] = await Promise.allSettled([Promise.all([getSettings(), getDeliveryFees()]), osen.deskMap(COMMUNES), getTracking(), osen.unservedMap(COMMUNES)]);
   if (a.status === 'fulfilled') { price = a.value[0].sell_price || price; offerPrices = offers(a.value[0]); fees = a.value[1]; }
   if (b.status === 'fulfilled') desks = b.value;
   if (t.status === 'fulfilled') pixel = t.value.meta_pixel_id || '';
+  if (u.status === 'fulfilled') unserved = u.value;
   res.setHeader('cache-control', 'public, max-age=60');
-  send(res, 200, { price, offers: offerPrices, fees, desks, pixel });
+  send(res, 200, { price, offers: offerPrices, fees, desks, pixel, unserved });
 };
