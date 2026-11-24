@@ -166,6 +166,16 @@
         <div id="unitCalc" class="muted" style="margin-top:12px"></div>
       </div>
     </div>
+    <div class="card"><div class="hd"><span>Meta Pixel (فيسبوك / إنستغرام)</span></div>
+      <div class="bd">
+        <div class="row">
+          <input class="in" id="pixelId" inputmode="numeric" placeholder="Pixel ID — مثال: 123456789012345" style="width:260px;direction:ltr">
+          <button class="btn" onclick="savePixel()">حفظ</button>
+          <span class="muted" id="pixelState"></span>
+        </div>
+        <div class="muted" style="margin-top:8px;font-size:13px">تجده في Meta Events Manager ← مصادر البيانات ← اسم البكسل. الأحداث المرسلة: PageView، ViewContent، InitiateCheckout، Lead، Purchase (بالمبلغ الحقيقي بالدينار). اتركه فارغًا لإيقاف البكسل.</div>
+      </div>
+    </div>
   </div>
 
   <!-- DELIVERY FEES -->
@@ -254,7 +264,7 @@ async function loadSummary(){
     ['Leads هذا الأسبوع',fmt(w.leads),delta(w.leads,p.leads)],
     ['ربح الأسبوع (دج)',fmt(w.profit),`<span class="muted">المتوقع: ${fmt(w.expected_profit)} دج</span>`],
   ].map(([l,v,dl])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${dl}</div></div>`).join('');
-  drawChart(); renderWeeks(); fillPrices();
+  drawChart(); renderWeeks(); fillPrices(); loadPixel();
 }
 
 function drawChart(){
@@ -402,6 +412,8 @@ async function saveFees(){const fees={};document.querySelectorAll('.feeIn').forE
 // ---------- Osen ----------
 function osenStatus(c){if(!c)return'';return (c.communes_ok?'✅ الاتصال بـ Osen يعمل ('+c.communes_ok+' ولاية، مكاتب Stop desk تُقرأ تلقائياً)':'❌ تعذر الاتصال بـ Osen')+'<br>'+
   (c.key_ok?'✅ إرسال الطلبات إلى Osen مفعّل':'📤 الطلبات تُجمع في ملف Osen (تبويب الطلبات) إلى أن يفعّل Osen الإرسال المباشر لحسابك')}
+async function loadPixel(){const d=await api('tracking_settings');if(!d.ok)return;$('#pixelId').value=d.tracking.meta_pixel_id||'';$('#pixelState').textContent=d.tracking.meta_pixel_id?'✅ البكسل مفعّل':'غير مفعّل'}
+async function savePixel(){const d=await api('save_tracking',{body:{meta_pixel_id:$('#pixelId').value}});if(d.ok){$('#pixelId').value=d.tracking.meta_pixel_id;$('#pixelState').textContent=d.tracking.meta_pixel_id?'✅ البكسل مفعّل (يظهر في الموقع خلال دقيقة)':'غير مفعّل';toast('تم الحفظ')}}
 async function loadOsen(){const d=await api('osen_settings');if(!d.ok)return;$('#osMerchant').value=d.ids.merchant_id;$('#osStore').value=d.ids.store_id;$('#osToken').value='';
   $('#osToken').placeholder=d.ids.token_saved?'•••••••• (محفوظ — اتركه فارغاً للإبقاء عليه)':'الصق المفتاح هنا';
   $('#osTokenState').textContent=d.ids.token_saved?'✅ المفتاح محفوظ ومشفّر على الخادم (لا يُعرض مرة أخرى)':(d.ids.token_env?'المفتاح مأخوذ من متغير Vercel OSEN_API_KEY':'لم يُحفظ أي مفتاح بعد');

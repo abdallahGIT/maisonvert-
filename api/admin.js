@@ -1,5 +1,5 @@
 // /api/admin?action=... — everything the admin page needs. Requires the x-admin-key header = ADMIN_PASSWORD.
-const { query, getSettings, saveSettings, getDeliveryFees, saveDeliveryFees, offerTotal } = require('../lib/db');
+const { query, getSettings, saveSettings, getDeliveryFees, saveDeliveryFees, offerTotal, getTracking, saveTracking } = require('../lib/db');
 const telegram = require('../lib/telegram');
 const osen = require('../lib/osen');
 const { send, readBody, isAdmin, clean } = require('../lib/http');
@@ -169,6 +169,12 @@ module.exports = async (req, res) => {
 
       case 'save_delivery_fees':
         return send(res, 200, { ok: true, fees: await saveDeliveryFees(b.fees) });
+
+      case 'tracking_settings':
+        return send(res, 200, { ok: true, tracking: await getTracking() });
+
+      case 'save_tracking':
+        return send(res, 200, { ok: true, tracking: await saveTracking(b) });
 
       case 'save_settings':
         return send(res, 200, { ok: true, settings: await saveSettings(b) });

@@ -297,7 +297,17 @@
 <script>
   // Price comes from the admin price sheet (/api/config). 1600 is only the fallback.
   let PRICE = 1600;
-  let OFFERS = {1:1600,2:2700,3:3500}; // total price per offer (from the admin price sheet)
+  let OFFERS = {1:1600,2:2700,3:3500};
+  // Meta Pixel: the id comes from Admin (via /api/config) and the script loads after the first image.
+  const PX={q:[],on:false,id:''};
+  function track(ev,data,opt){if(PX.on)fbq('track',ev,data||{},opt||{});else PX.q.push([ev,data,opt])}
+  function startPixel(id){
+    if(!id||PX.id)return;PX.id=id;
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init',id);fbq('track','PageView');
+    fbq('track','ViewContent',{content_name:'بذور طماطم قلب الثور',content_ids:['tomato-coeur-de-boeuf'],content_type:'product',value:PRICE,currency:'DZD'});
+    PX.on=true;PX.q.splice(0).forEach(a=>track.apply(null,a));
+  } // total price per offer (from the admin price sheet)
   let FEES = {};
   let DESKS = null;        // Osen stop desks per commune           // delivery fees per wilaya, from the admin page
 
@@ -324,8 +334,9 @@
   document.getElementById('dtype').addEventListener('change',render);
   comSel.addEventListener('change',render);
 
-  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{}));
+  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}if(c&&c.pixel)startPixel(c.pixel)}).catch(()=>{}));
 
+  document.getElementById('order').addEventListener('focusin',()=>track('InitiateCheckout',{content_ids:['tomato-coeur-de-boeuf'],content_type:'product',value:OFFERS[qty],currency:'DZD',num_items:qty}),{once:true});
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
   const phoneEl=document.getElementById('phone');
   let leadTimer, lastLead='';
@@ -333,6 +344,7 @@
   function saveLead(){
     const p=leadPayload(); if(p.phone.length<3) return;
     const key=JSON.stringify(p); if(key===lastLead) return; lastLead=key;
+    if(/^0[567]\d{8}$/.test(p.phone)&&!PX.lead){PX.lead=true;track('Lead',{content_name:'بذور طماطم قلب الثور',value:OFFERS[qty],currency:'DZD'})}
     fetch('/api/lead',{method:'POST',headers:{'content-type':'application/json'},body:key,keepalive:true}).catch(()=>{});
   }
   phoneEl.addEventListener('input',()=>{
@@ -421,6 +433,7 @@
         return;
       }
       if(d.id) document.getElementById('orderNo').textContent='رقم طلبك: #'+d.id;
+      if(d.id) track('Purchase',{content_ids:['tomato-coeur-de-boeuf'],content_type:'product',num_items:qty,value:d.total||OFFERS[qty],currency:'DZD'},{eventID:'order-'+d.id});
       f.style.display='none';document.getElementById('thanks').style.display='block';
       document.getElementById('order').scrollIntoView({behavior:'smooth'});
     }catch(_){errEl.textContent='تحقق من اتصالك بالإنترنت وحاول مرة أخرى'}
