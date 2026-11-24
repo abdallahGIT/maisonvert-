@@ -1,7 +1,7 @@
 // POST /api/order — creates a COD order.
 // The database save and the Telegram alert run side by side and independently:
 // if one fails, the other still happens, so an order is never lost.
-const { query, getSettings, getDeliveryFees, deskAvailable, DEFAULT_SETTINGS } = require('../lib/db');
+const { query, getSettings, getDeliveryFees, deskAvailable, offerTotal, DEFAULT_SETTINGS } = require('../lib/db');
 const telegram = require('../lib/telegram');
 const osen = require('../lib/osen');
 const { send, readBody, clean, digits, clientIp } = require('../lib/http');
@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
   const w = COMMUNES[code];
   const commune = clean(b.commune, 80);
   const reference = clean(b.reference, 200);
-  const qty = Math.min(10, Math.max(1, parseInt(b.qty, 10) || 1));
+  const qty = Math.min(3, Math.max(1, parseInt(b.qty, 10) || 1)); // offers: 1, 2 or 3 packs
   const deliveryType = b.delivery_type === 'desk' ? 'desk' : 'home';
 
   const errors = {};
@@ -29,21 +29,22 @@ module.exports = async (req, res) => {
   if (Object.keys(errors).length) return send(res, 400, { ok: false, errors });
 
   // Price comes from the admin price sheet, never from the browser.
-  let price = DEFAULT_SETTINGS.sell_price;
+  let packs = offerTotal(DEFAULT_SETTINGS, qty); // total for the chosen offer
   let fee = 0;
   let deskUnavailable = false;
   try {
     const [s, fees, desks] = await Promise.all([getSettings(), getDeliveryFees(), deliveryType === 'desk' ? osen.deskMap({ [code]: w }).catch(() => null) : null]);
-    price = s.sell_price || price;
+    packs = offerTotal(s, qty);
     const f = fees[code];
     if (f && (f.home != null || f.desk != null) && deliveryType === 'desk' && !deskAvailable(f, commune, desks ? desks[code] || {} : null)) deskUnavailable = true;
     fee = (f && f[deliveryType]) || 0;
   } catch (_) { /* DB down: use defaults */ }
   if (deskUnavailable) return send(res, 400, { ok: false, errors: { delivery_type: 'التوصيل للمكتب غير متوفر في هذه البلدية، اختر التوصيل للمنزل' } });
 
+  const price = Math.round(packs / qty); // unit price kept for reference; the offer total is exact
   const order = {
     session_id: clean(b.sid, 64) || null, name, phone, wilaya_code: code, wilaya: w.name,
-    commune, reference, qty, unit_price: price, delivery_type: deliveryType, delivery_fee: fee, total: price * qty + fee, ip: clientIp(req),
+    commune, reference, qty, unit_price: price, delivery_type: deliveryType, delivery_fee: fee, total: packs + fee, ip: clientIp(req),
   };
 
   // 1) Save to DB (with a duplicate guard: same phone within 15 minutes = same order)

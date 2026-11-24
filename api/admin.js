@@ -1,5 +1,5 @@
 // /api/admin?action=... — everything the admin page needs. Requires the x-admin-key header = ADMIN_PASSWORD.
-const { query, getSettings, saveSettings, getDeliveryFees, saveDeliveryFees } = require('../lib/db');
+const { query, getSettings, saveSettings, getDeliveryFees, saveDeliveryFees, offerTotal } = require('../lib/db');
 const telegram = require('../lib/telegram');
 const osen = require('../lib/osen');
 const { send, readBody, isAdmin, clean } = require('../lib/http');
@@ -37,9 +37,9 @@ async function summary() {
               count(*) FILTER (WHERE status = 'delivered')::int AS delivered,
               count(*) FILTER (WHERE status = 'returned')::int AS returned,
               COALESCE(sum(qty) FILTER (WHERE status = 'delivered'),0)::int AS qty_delivered,
-              COALESCE(sum(unit_price * qty) FILTER (WHERE status = 'delivered'),0)::int AS revenue,
+              COALESCE(sum(total - delivery_fee) FILTER (WHERE status = 'delivered'),0)::int AS revenue,
               COALESCE(sum(qty) FILTER (WHERE status = ANY($2) AND status <> 'returned'),0)::int AS qty_confirmed,
-              COALESCE(sum(unit_price * qty) FILTER (WHERE status = ANY($2) AND status <> 'returned'),0)::int AS revenue_confirmed
+              COALESCE(sum(total - delivery_fee) FILTER (WHERE status = ANY($2) AND status <> 'returned'),0)::int AS revenue_confirmed
          FROM orders WHERE ${LOCAL_DAY} >= $1::date GROUP BY 1 ORDER BY 1`,
       [from, CONFIRMED]
     ),
@@ -138,7 +138,10 @@ module.exports = async (req, res) => {
         if (b.note !== undefined) { params.push(clean(b.note, 500)); fields.push(`note = $${params.length}`); }
         if (b.qty !== undefined) {
           const qty = Math.min(10, Math.max(1, parseInt(b.qty, 10) || 1));
-          params.push(qty); fields.push(`qty = $${params.length}`, `total = unit_price * $${params.length} + delivery_fee`);
+          const packs = offerTotal(await getSettings(), qty); // same offer prices as the landing page
+          params.push(qty); fields.push(`qty = $${params.length}`);
+          params.push(packs); fields.push(`total = $${params.length} + delivery_fee`);
+          params.push(Math.round(packs / qty)); fields.push(`unit_price = $${params.length}`);
         }
         if (!fields.length) return send(res, 400, { ok: false });
         const r = await query(`UPDATE orders SET ${fields.join(', ')}, updated_at = now() WHERE id = $1 RETURNING *`, params);

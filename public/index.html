@@ -86,9 +86,12 @@
   input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:2px solid #cfe3d3;border-radius:12px;background:#fbfffb;outline:none;transition:border .15s}
   input:focus,select:focus,textarea:focus{border-color:var(--green)}
   .err{border-color:var(--red)!important}
-  .qty{display:flex;align-items:center;gap:10px}
-  .qty button{width:42px;height:42px;border-radius:50%;border:2px solid var(--green);background:#fff;font-size:22px;font-weight:800;color:var(--green);cursor:pointer}
-  .qty output{min-width:30px;text-align:center;font-weight:800;font-size:20px}
+  .offers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .offers label{position:relative;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid #cfe3d3;border-radius:12px;padding:10px 4px;cursor:pointer;background:#fbfffb;text-align:center;font-size:15px}
+  .offers input{position:absolute;opacity:0;pointer-events:none}
+  .offers label:has(input:checked){border-color:var(--red);background:#fff1f1;box-shadow:0 0 0 2px rgba(217,31,38,.15)}
+  .offers .op{color:var(--green);font-weight:800;font-size:18px}
+  .offers .save{color:var(--red);font-weight:700;font-size:12px;min-height:18px}
   .summary{background:var(--cream);border-radius:12px;padding:10px 12px;margin:14px 0;font-size:15px}
   .summary div{display:flex;justify-content:space-between}
   .summary .total{font-weight:800;color:var(--green);font-size:17px;border-top:1px dashed #cdd;margin-top:6px;padding-top:6px}
@@ -225,11 +228,11 @@
         <input id="reference" name="reference" placeholder="مثال: قرب مسجد النور، الحي الجديد">
         <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0;pointer-events:none">
 
-        <label>الكمية</label>
-        <div class="qty">
-          <button type="button" id="plus" aria-label="زيادة">+</button>
-          <output id="qty">1</output>
-          <button type="button" id="minus" aria-label="نقصان">−</button>
+        <label>اختر العرض</label>
+        <div class="offers" id="offers">
+          <label><input type="radio" name="qty" value="1" checked><b>علبة واحدة</b><span class="op" id="offer1">1600 دج</span><small class="save" id="save1"></small></label>
+          <label><input type="radio" name="qty" value="2"><b>علبتان</b><span class="op" id="offer2">2700 دج</span><small class="save" id="save2">وفّر 500 دج</small></label>
+          <label><input type="radio" name="qty" value="3"><b>3 علب</b><span class="op" id="offer3">3500 دج</span><small class="save" id="save3">وفّر 1300 دج</small></label>
         </div>
 
         <div class="summary">
@@ -294,6 +297,7 @@
 <script>
   // Price comes from the admin price sheet (/api/config). 1600 is only the fallback.
   let PRICE = 1600;
+  let OFFERS = {1:1600,2:2700,3:3500}; // total price per offer (from the admin price sheet)
   let FEES = {};
   let DESKS = null;        // Osen stop desks per commune           // delivery fees per wilaya, from the admin page
 
@@ -320,7 +324,7 @@
   document.getElementById('dtype').addEventListener('change',render);
   comSel.addEventListener('change',render);
 
-  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{}));
+  afterLoad(()=>fetch('/api/config').then(r=>r.json()).then(c=>{if(c&&c.price){PRICE=c.price;if(c.offers)OFFERS=c.offers;showOffers();FEES=c.fees||{};DESKS=c.desks||null;document.querySelectorAll('.js-price').forEach(e=>e.textContent=PRICE);render()}}).catch(()=>{}));
 
   // Phone: digits only, max 10. Saved as a lead once 3 digits are typed.
   const phoneEl=document.getElementById('phone');
@@ -341,7 +345,9 @@
   window.addEventListener('pagehide',saveLead);
 
   // Quantity + totals
-  let qty=1; const qEl=document.getElementById('qty');
+  let qty=1;
+  function showOffers(){[1,2,3].forEach(n=>{document.getElementById('offer'+n).textContent=OFFERS[n]+' دج';const s=PRICE*n-OFFERS[n];document.getElementById('save'+n).textContent=s>0?'وفّر '+s+' دج':''})}
+  document.getElementById('offers').addEventListener('change',e=>{qty=+e.target.value||1;render()});
   function currentFee(){
     // returns a number, or null when the fee is unknown for this wilaya
     const f=FEES[sel.value]; if(!sel.value||!f) return null;
@@ -349,7 +355,6 @@
     return f[t]==null?null:f[t];
   }
   function render(){
-    qEl.textContent=qty;
     const f=FEES[sel.value]||null;
     const fh=document.getElementById('feeHome'), fd=document.getElementById('feeDesk'), desk=document.querySelector('input[value=desk]');
     if(!sel.value){fh.textContent='اختر الولاية';fd.textContent='اختر الولاية'}
@@ -369,12 +374,11 @@
     desk.disabled=deskOff; document.getElementById('dtDesk').classList.toggle('off',deskOff);
     if(deskOff&&desk.checked){document.querySelector('input[value=home]').checked=true}
     const fee=currentFee();
-    document.getElementById('sumProduct').textContent=(PRICE*qty)+' دج';
+    const packs=OFFERS[qty];
+    document.getElementById('sumProduct').textContent=packs+' دج';
     document.getElementById('sumDelivery').textContent=!sel.value?'اختر الولاية':(fee==null?'يحدد عند التأكيد':fee+' دج');
-    document.getElementById('sumTotal').textContent=fee==null?(PRICE*qty)+' دج + التوصيل':(PRICE*qty+fee)+' دج';
+    document.getElementById('sumTotal').textContent=fee==null?packs+' دج + التوصيل':(packs+fee)+' دج';
   }
-  document.getElementById('plus').onclick=()=>{qty=Math.min(10,qty+1);render()};
-  document.getElementById('minus').onclick=()=>{qty=Math.max(1,qty-1);render()};
 
   // Product gallery: swipe, arrows, thumbnails
   const slides=document.getElementById('slides'),thumbs=[...document.querySelectorAll('#thumbs button')],cnt=document.getElementById('count');
