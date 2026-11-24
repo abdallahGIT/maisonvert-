@@ -28,7 +28,7 @@
       ]
     },
     {
-      "source": "/images/(hero-v2-.*)",
+      "source": "/images/(hero-v3-.*)",
       "headers": [
         {
           "key": "Cache-Control",
